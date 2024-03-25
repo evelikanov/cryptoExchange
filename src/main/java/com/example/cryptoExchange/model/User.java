@@ -1,14 +1,11 @@
 package com.example.cryptoExchange.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
+@Table(name = "app_user")
 @Entity
 @Getter
 @Setter
@@ -18,7 +15,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String username;
-    private String password;
-    private String email;
+    private String username; // Имя пользователя
+    private String password; // Пароль
+    private String email; // Электронная почта
 }

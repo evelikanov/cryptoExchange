@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: crypto-exchange
+  datasource:
+    url: jdbc:postgresql://localhost:5432/crypto_exchange
+    username: postgres
+    password:
+  data:
+    jpa:
+      repositories:
+        base-package: com.example.cryptoExchange.repository
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
