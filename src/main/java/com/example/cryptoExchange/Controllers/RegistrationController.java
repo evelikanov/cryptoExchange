@@ -7,22 +7,26 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 
-@Controller
+@RestController
 public class RegistrationController {
 
     @GetMapping("/registration")
-    public String registration() {
-        return "registration";
+    public ModelAndView registration() {
+        return new ModelAndView("registration");
     }
+
     @Autowired
     private UserRepository userRepository;
+
     @PostMapping("/registration")
-    public String registerUser(@RequestParam("username") String username,
-                               @RequestParam("password") String password,
-                               @RequestParam("dateOfBirth") String dateOfBirth,
-                               @RequestParam("email") String email) {
+    public ModelAndView registerUser(@RequestParam("username") String username,
+                                     @RequestParam("password") String password,
+                                     @RequestParam("dateOfBirth") String dateOfBirth,
+                                     @RequestParam("email") String email) {
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
@@ -30,6 +34,6 @@ public class RegistrationController {
         user.setEmail(email);
 
         userRepository.save(user);
-        return "redirect:/home";
+        return new ModelAndView("redirect:/home");
     }
 }

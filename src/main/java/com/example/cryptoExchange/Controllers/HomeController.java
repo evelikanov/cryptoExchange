@@ -1,24 +1,21 @@
 package com.example.cryptoExchange.Controllers;
-import org.springframework.stereotype.Controller;
+
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
-@Controller
+@RestController
 public class HomeController {
-
     @GetMapping("/home")
-    public String home() {
-        return "home";
+    public ModelAndView home() {
+        return new ModelAndView("home");
     }
-
     @GetMapping("/cryptoCurrencyList")
-    public String cryptoCurrencyList() {
-        return "cryptoCurrencyList";
+    public ModelAndView cryptoCurrencyList() {
+        return new ModelAndView("cryptoCurrencyList");
     }
-
     @GetMapping("/auth")
-    public String auth() {
-        return "auth";
+    public ModelAndView auth() {
+        return new ModelAndView("auth");
     }
-
 }

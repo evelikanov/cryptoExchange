@@ -2,13 +2,14 @@ package com.example.cryptoExchange.Controllers;
 
 import com.example.cryptoExchange.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
-@Controller
+@RestController
 public class LoginController {
     private final UserServiceImpl userServiceImpl;
 
@@ -18,21 +19,21 @@ public class LoginController {
     }
 
     @GetMapping("/login")
-    public String login() {
-        return "login";
+    public ModelAndView login() {
+        return new ModelAndView("login");
     }
 
     @PostMapping("/login")
-    public String authenticateUser(@RequestParam("username") String username,
-                                   @RequestParam("password") String password,
-                                   Model model) {
+    public ModelAndView authenticateUser(@RequestParam("username") String username,
+                                         @RequestParam("password") String password,
+                                         Model model) {
         boolean isAuthenticated = userServiceImpl.authenticateUser(username, password);
         if (isAuthenticated) {
             model.addAttribute("username", username);
-            return "redirect:/home";
+            return new ModelAndView("redirect:/home");
         } else {
-            model.addAttribute("message" , "Invalid username or password");
-            return "redirect:/login";
+            model.addAttribute("message", "Invalid username or password");
+            return new ModelAndView("redirect:/login");
         }
     }
 }
