@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log in</title>
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="/css/common.css">
+</head>
+<body>
+<form action="/login" method="post">
+    <p>username</p>
+    <p>
+        <input type="text" name="username">
+    </p>
+    <p>password</p>
+    <p>
+        <input type="password" name="password">
+    </p>
+    <div style="margin-bottom: 10px;"></div>
+    <button type="submit">Confirm</button>
+    <p>Don't have an account? <a href="/registration">Create an account</a></p>
+</form>
+</body>
+</html>
