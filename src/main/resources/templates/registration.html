@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+   <link rel="stylesheet" type="text/css" href="/css/common.css">
+</head>
+<body>
+<form action="/registration" method="post">
+    <label>username</label>
+    <label>
+        <input type="text" name="username">
+    </label>
+    <label>password</label>
+    <label>
+        <input type="password" name="password">
+    </label>
+    <label>Date of Birthday</label>
+    <label>
+        <input type="text" name="dateOfBirth" pattern="\d{2}.\d{2}.\d{4}" placeholder="__.__.____" onfocus="this.placeholder='DD.MM.YYYY'">
+    </label>
+    <label>E-mail address</label>
+    <label>
+        <input type="text" name="email">
+    </label>
+    <div style="margin-bottom: 10px;"></div>
+    <button type="submit">Confirm</button>
+</form>
+</body>
+</html>
