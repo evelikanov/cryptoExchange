@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Создание таблицы для CryptoCurrency -->
+    <changeSet id="1" author="wvbaymler">
+        <createTable tableName="crypto_currency">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="symbol" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Создание таблицы для Deal -->
+    <changeSet id="2" author="wvbaymler">
+        <createTable tableName="deal">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="timestamp" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="decimal(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="decimal(19,4)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Создание таблицы для wallet -->
+    <changeSet id="3" author="wvbaymler">
+        <createTable tableName="wallet">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="balance" type="decimal(19,4)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Создание таблицы для Transaction -->
+    <changeSet id="4" author="wvbaymler">
+        <createTable tableName="transaction">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="timestamp" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="decimal(19,4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wallet_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Создание таблицы для User -->
+    <changeSet id="5" author="wvbaymler">
+        <createTable tableName="user">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_birth" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Наполнение таблицы User начальными данными -->
+    <changeSet id="6" author="wvbaymler">
+        <insert tableName="user">
+            <column name="username" value="john_doe"/>
+            <column name="date_of_birth" value="1990-01-01"/>
+            <column name="password" value="encrypted_password"/>
+            <column name="email" value="john.doe@example.com"/>
+        </insert>
+        <insert tableName="user">
+            <column name="username" value="jane_doe"/>
+            <column name="date_of_birth" value="1992-02-02"/>
+            <column name="password" value="encrypted_password"/>
+            <column name="email" value="jane.doe@example.com"/>
+        </insert>
+    </changeSet>
+
+    <!-- Дополнительные changeSet для наполнения других таблиц -->
+
+    <!-- Наполнение таблицы CryptoCurrency начальными данными -->
+    <changeSet id="7" author="wvbaymler">
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Bitcoin"/>
+            <column name="symbol" value="BTC"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="2"/>
+            <column name="name" value="Ethereum"/>
+            <column name="symbol" value="ETH"/>
+        </insert>
+    </changeSet>
+
+    <!-- Наполнение таблицы Deal начальными данными -->
+    <changeSet id="8" author="wvbaymler">
+        <insert tableName="deal">
+            <column name="id" valueNumeric="1"/>
+            <column name="timestamp" valueComputed="TO_TIMESTAMP('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')"/>
+            <column name="amount" valueNumeric="0.5"/>
+            <column name="price" valueNumeric="20000"/>
+        </insert>
+        <insert tableName="deal">
+            <column name="id" valueNumeric="2"/>
+            <column name="timestamp" valueComputed="TO_TIMESTAMP('2023-01-02 00:00:00', 'YYYY-MM-DD HH24:MI:SS')"/>
+            <column name="amount" valueNumeric="1.0"/>
+            <column name="price" valueNumeric="30000"/>
+        </insert>
+    </changeSet>
+
+    <!-- Наполнение таблицы wallet начальными данными -->
+    <changeSet id="9" author="wvbaymler">
+        <insert tableName="wallet">
+            <column name="id" valueNumeric="1"/>
+            <column name="balance" valueNumeric="10000"/>
+        </insert>
+        <insert tableName="wallet">
+            <column name="id" valueNumeric="2"/>
+            <column name="balance" valueNumeric="15000"/>
+        </insert>
+    </changeSet>
+
+    <!-- Наполнение таблицы Transaction начальными данными -->
+    <changeSet id="10" author="wvbaymler">
+        <insert tableName="transaction">
+            <column name="id" valueNumeric="1"/>
+            <column name="wallet_id" valueNumeric="1"/>
+            <column name="currency_id" valueNumeric="1"/>
+            <column name="amount" valueNumeric="0.5"/>
+            <column name="type" value="BUY"/> <!-- Corrected column name from transaction_type to type -->
+            <column name="timestamp" valueComputed="TO_TIMESTAMP('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')"/>
+        </insert>
+        <insert tableName="transaction">
+            <column name="id" valueNumeric="2"/>
+            <column name="wallet_id" valueNumeric="2"/>
+            <column name="currency_id" valueNumeric="2"/>
+            <column name="amount" valueNumeric="1.0"/>
+            <column name="type" value="SELL"/> <!-- Corrected column name from transaction_type to type -->
+            <column name="timestamp" valueComputed="TO_TIMESTAMP('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
