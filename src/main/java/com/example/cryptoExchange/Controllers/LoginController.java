@@ -27,6 +27,8 @@ public class LoginController {
     public ModelAndView authenticateUser(@RequestParam("username") String username,
                                          @RequestParam("password") String password,
                                          Model model) {
+
+        // TODO: сделать отображение информации о том, что мы залогинены или нет на главной странице
         boolean isAuthenticated = userServiceImpl.authenticateUser(username, password);
         if (isAuthenticated) {
             model.addAttribute("username", username);
