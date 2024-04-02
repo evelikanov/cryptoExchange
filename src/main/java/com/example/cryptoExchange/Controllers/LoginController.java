@@ -1,7 +1,10 @@
 package com.example.cryptoExchange.Controllers;
 
+import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.service.impl.UserServiceImpl;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,17 +12,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.security.Principal;
+import java.util.Optional;
+
 @RestController
 public class LoginController {
     private final UserServiceImpl userServiceImpl;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public LoginController(UserServiceImpl userServiceImpl) {
+    public LoginController(UserServiceImpl userServiceImpl, BCryptPasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
         this.userServiceImpl = userServiceImpl;
     }
 
     @GetMapping("/login")
     public ModelAndView login() {
+        //TODO Добавить выброс ошибки при неверном логине или пароле "BadCredentials" -> /login
         return new ModelAndView("login");
     }
 
@@ -28,14 +37,12 @@ public class LoginController {
                                          @RequestParam("password") String password,
                                          Model model) {
 
-        // TODO: сделать отображение информации о том, что мы залогинены или нет на главной странице
-        boolean isAuthenticated = userServiceImpl.authenticateUser(username, password);
-        if (isAuthenticated) {
-            model.addAttribute("username", username);
+        Optional<User> user = userServiceImpl.findUserByUsername(username);
+
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
             return new ModelAndView("redirect:/home");
         } else {
-            model.addAttribute("message", "Invalid username or password");
-            return new ModelAndView("redirect:/login");
+            return new ModelAndView("/login");
         }
     }
 }

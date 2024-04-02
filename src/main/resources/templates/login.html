@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:с="http://www.w3.org/1999/XSL/Transform">
 <head>
     <meta charset="UTF-8">
     <title>Log in</title>
@@ -10,7 +10,6 @@
             align-items: center;
         }
     </style>
-    <link rel="stylesheet" type="text/css" href="/css/common.css">
 </head>
 <body>
 <form action="/login" method="post">
@@ -26,5 +25,8 @@
     <button type="submit">Confirm</button>
     <p>Don't have an account? <a href="/registration">Create an account</a></p>
 </form>
+<p th:if="${BadCredentials}">
+    Invalid username or password
+</p>
 </body>
 </html>
