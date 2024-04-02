@@ -1,13 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
-    <link rel="stylesheet" type="text/css" href="/css/common.css">
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
 
 <p>Hello! This is BitSwap cryptoExchange</p>
+<p th:if="${loggedIn}">
+    You are logged in as: <strong th:text="${username}"></strong>
+</p>
 <p>Here you can buy or sell cryptocurrency at the best price</p>
 <a href="/login">Log in or Create an account</a>
 <a href="/cryptoCurrencyList">List of currencies</a>

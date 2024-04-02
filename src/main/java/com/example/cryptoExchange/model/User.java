@@ -23,4 +23,10 @@ public class User {
     private String password; // Пароль
     @Column(nullable = false)
     private String email; // Электронная почта
+
+    public String getRole() {
+        return "USER";
+    }
+//    @Column(nullable = false)
+//    private String role;
 }
