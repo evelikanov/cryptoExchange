@@ -1,4 +1,4 @@
-package com.example.cryptoExchange.config;
+package com.example.cryptoExchange.model;
 
 import com.example.cryptoExchange.model.User;
 import org.springframework.security.core.GrantedAuthority;
