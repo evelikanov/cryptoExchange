@@ -1,5 +1,6 @@
-package com.example.cryptoExchange.config;
+package com.example.cryptoExchange.service;
 
+import com.example.cryptoExchange.model.MyUserDetails;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
