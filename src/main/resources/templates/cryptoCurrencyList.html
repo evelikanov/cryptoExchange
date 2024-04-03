@@ -1,14 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Crypto currency List</title>
-    <link rel="stylesheet" type="text/css" href="/css/common.css">
 </head>
 <body>
-<p>List of Crypto Currencies</p>
-<p>BitCoin</p>
-<p>Ethereum</p>
-<p>DogeCoin</p>
+<h1>Crypto Currency List</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Symbol</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="currency : ${cryptoCurrencies}">
+        <td th:text="${currency.id}"></td>
+        <td th:text="${currency.name}"></td>
+        <td th:text="${currency.symbol}"></td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>
