@@ -1,4 +1,4 @@
-package com.example.cryptoExchange.service;
+package com.example.cryptoExchange.service.impl;
 
 import com.example.cryptoExchange.model.MyUserDetails;
 import com.example.cryptoExchange.model.User;

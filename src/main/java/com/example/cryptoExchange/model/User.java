@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Table(name = "users")
 @Entity
 @Getter
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User {
 
+    //TODO reset entity WALLET
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -23,10 +26,12 @@ public class User {
     private String password; // Пароль
     @Column(nullable = false)
     private String email; // Электронная почта
+    @Column(nullable = false)
+    private BigDecimal balance; // Баланс денежных средств
+    @Column(nullable = false)
+    private BigDecimal currency; // Баланс криптовалютных средств
 
     public String getRole() {
         return "USER";
     }
-//    @Column(nullable = false)
-//    private String role;
 }

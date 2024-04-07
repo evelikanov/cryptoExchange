@@ -14,12 +14,36 @@
 <body>
 
 <p>Hello! This is BitSwap cryptoExchange</p>
+<p>Here you can buy or sell Crypto at the best price</p>
 <p th:if="${loggedIn}">
-    You are logged in as: <strong th:text="${username}"></strong>
+    You are logged in as: <strong th:text="${username}"></strong><br>
+    <a href="/user/data">User's personal account</a>
 </p>
-<p>Here you can buy or sell cryptocurrency at the best price</p>
-<a href="/login">Log in or Create an account</a>
-<a href="/cryptoCurrencyList">List of currencies</a>
-<a href="/user/data">User's personal account</a>
+<p th:unless="${loggedIn}">
+    <a href="/login">Log in or Create an account</a>
+</p>
+<p>
+    <a href="/cryptoCurrencyList">Cryptocurrencies list</a>
+</p>
+<p>
+    <a href="/aboutService">About service</a>
+</p>
+<p>
+    <a href="/cooperation">Cooperation</a>
+</p>
+<p>
+    <a href="/reviews">Reviews</a>
+</p>
+<p>
+    <a href="/tariffs">Tariffs</a>
+</p>
+<form action="/home" method="post">
+    <p>You give away. You get.</p>
+    <p>
+        <input type="number" name="giveAway" step="any">
+        <input type="number" name="get" step="any" pattern="\d*">
+    </p>
+    <input type="submit" value="Confirm"/>
+</form>
 </body>
 </html>

@@ -14,7 +14,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class HomeController {
-
     public final CryptoCurrencyService cryptoCurrencyService;
     @GetMapping("/home")
     public ModelAndView home(Model model, Principal principal) {
@@ -22,13 +21,31 @@ public class HomeController {
             model.addAttribute("username", principal.getName());
             model.addAttribute("loggedIn", true);
         }
-        return new ModelAndView("home");
+        return new ModelAndView("/home");
     }
     @GetMapping("/cryptoCurrencyList")
     public ModelAndView cryptoCurrencyList(Model model) {
-        // TODO: сделать вывод динамической информации из базы данных
         List<CryptoCurrency> cryptoCurrencies = cryptoCurrencyService.getAllCryptoCurrencies();
         model.addAttribute("cryptoCurrencies", cryptoCurrencies);
         return new ModelAndView("/cryptoCurrencyList");
+    }
+    @GetMapping("/aboutService")
+    public ModelAndView aboutService(Model model) {
+        return new ModelAndView("/aboutService");
+    }
+
+    @GetMapping("/cooperation")
+    public ModelAndView feedBack(Model model) {
+        return new ModelAndView("/cooperation");
+    }
+
+    @GetMapping("/reviews")
+    public ModelAndView reviews(Model model) {
+        return new ModelAndView("/reviews");
+    }
+
+    @GetMapping("/tariffs")
+    public ModelAndView tariffs(Model model) {
+        return new ModelAndView("/tariffs");
     }
 }
