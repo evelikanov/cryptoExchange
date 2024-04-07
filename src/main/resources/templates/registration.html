@@ -22,14 +22,19 @@
     <label>
         <input type="password" name="password">
     </label>
-    <label>Date of Birthday</label>
+    <label>date of birthday</label>
     <label>
-        <input type="text" name="dateOfBirth" pattern="\d{2}.\d{2}.\d{4}" placeholder="__.__.____" onfocus="this.placeholder='DD.MM.YYYY'">
+    <input type="text" name="dateOfBirth" placeholder="DD.MM.YYYY" pattern="^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$" max="2010-12-31">
     </label>
-    <label>E-mail address</label>
+    <label>e-mail address</label>
     <label>
-        <input type="text" name="email">
+        <input type="email" name="email">
     </label>
+
+    <div th:if="${emailError}" style="color: red;">Error: E-mail has already been taken</div>
+    <div th:if="${usernameError}" style="color: red;">Error: Username has already been taken</div>
+    <div th:if="${nullError}" style="color: red;">Error: All fields must be filled</div>
+
     <div style="margin-bottom: 10px;"></div>
     <button type="submit">Confirm</button>
 </form>

@@ -1,15 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Balance</title>
 </head>
 <body>
 
-<p>Wallet</p>
 <p>Money on your wallet: </p>
-<p>Cryptocurrency on your wallet: </p>
+<table>
+    <thead>
+    <tr>
+        <th>Balance</th>
+        <th>Crypto Balance</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td th:text="${balance}"></td>
+        <td th:text="${currency}"></td>
+    </tr>
+    </tbody>
+</table>
+<form action="/user/wallet" method="post">
+    <p>Top up your account balance</p>
+    <p>
+        <input type="number" name="balance" step="any">
+        <input type="number" name="currency" step="any">
+    </p>
+    <input type="submit" value="Confirm"/>
+</form>
 <a href="/user/data">User's personal account</a>
-<a href="/cryptoCurrencyList">List of cryptocurrencies</a>
+<a href="/cryptoCurrencyList">List of Crypto Currencies</a>
 </body>
 </html>

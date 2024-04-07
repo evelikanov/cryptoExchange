@@ -1,6 +1,6 @@
 package com.example.cryptoExchange.config;
 
-import com.example.cryptoExchange.service.MyUserDetailsService;
+import com.example.cryptoExchange.service.impl.MyUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -32,19 +32,22 @@ public class WebSecurityConfig {
         return provider;
     }
 
+
+    //TODO turn on csrf
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/home", "/login", "/registration", "cryptoCurrencyList").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/user/data", "/user/wallet", "/user/setting").authenticated()
+                        .anyRequest().permitAll())
                 .formLogin(form -> form.loginPage("/login")
                         .defaultSuccessUrl("/home", true)
-                        .failureUrl("/login")
+                        .failureUrl("/login?error=true")
                         .permitAll())
                 .logout(logout -> logout
                         .logoutSuccessUrl("/home"))
+                .authenticationProvider(authenticationProvider())
                 .build();
     }
 

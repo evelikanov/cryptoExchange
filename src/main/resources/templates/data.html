@@ -1,20 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>User's personal account</title>
 </head>
+<h1>Your data</h1>
 <body>
-<p>Personal data</p>
-<p>Name/Surname</p>
-<p>Age</p>
-<p>email</p>
+<table>
+    <thead>
+    <tr>
+        <th>username</th>
+        <th>date of birthday</th>
+        <th>e-mail</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td th:text="${user.username}"></td>
+        <td th:text="${user.dateOfBirth}"></td>
+        <td th:text="${user.email}"></td>
+    </tr>
+    </tbody>
+</table>
 <a href="/user/wallet">Your wallet</a>
-<a href="/cryptoCurrencyList">List of cryptocurrencies</a>
+<a href="/cryptoCurrencyList">List of Crypto Currencies</a>
 <a href="/home">Home page</a>
-
+<a href="/user/setting">Edit your data</a>
 <form action="/logout" method="post">
     <input type="submit" value="Sign Out"/>
+</form>
+<form action="/user/data" method="post">
+    <input type="submit" value="Delete account"/>
 </form>
 </body>
 </html>

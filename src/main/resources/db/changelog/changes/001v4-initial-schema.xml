@@ -136,6 +136,46 @@
             <column name="name" value="Ethereum"/>
             <column name="symbol" value="ETH"/>
         </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="Tether USDt"/>
+            <column name="symbol" value="USDT"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="4"/>
+            <column name="name" value="BNB"/>
+            <column name="symbol" value="BNB"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="5"/>
+            <column name="name" value="Solana"/>
+            <column name="symbol" value="SOL"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="6"/>
+            <column name="name" value="USDC"/>
+            <column name="symbol" value="USDC"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="7"/>
+            <column name="name" value="XRP"/>
+            <column name="symbol" value="XRP"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="8"/>
+            <column name="name" value="Dogecoin"/>
+            <column name="symbol" value="DOGE"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="9"/>
+            <column name="name" value="Cardano"/>
+            <column name="symbol" value="ADA"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="10"/>
+            <column name="name" value="Toncoin"/>
+            <column name="symbol" value="TON"/>
+        </insert>
     </changeSet>
 
     <!-- Наполнение таблицы Deal начальными данными -->
