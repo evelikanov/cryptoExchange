@@ -15,17 +15,12 @@ import java.util.Optional;
 
 @RestController
 public class LoginController {
-    private final UserServiceImpl userServiceImpl;
-    private final BCryptPasswordEncoder passwordEncoder;
-
     @Autowired
-    public LoginController(UserServiceImpl userServiceImpl, BCryptPasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-        this.userServiceImpl = userServiceImpl;
-    }
-
+    private UserServiceImpl userServiceImpl;
     @Autowired
-    UserRepository userRepository;
+    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/login")
     public ModelAndView login(@RequestParam(value = "error", defaultValue = "false") boolean loginError) {

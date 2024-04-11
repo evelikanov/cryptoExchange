@@ -1,0 +1,45 @@
+package com.example.cryptoExchange.model.Transaction;
+
+import com.example.cryptoExchange.model.User;
+import com.example.cryptoExchange.model.Wallet.CryptoWallet;
+import com.example.cryptoExchange.model.Wallet.MoneyWallet;
+import com.example.cryptoExchange.model.Wallet.Wallet;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Table(name = "transaction")
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Transaction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "wallet_id")
+    private Wallet Wallet;
+
+    @Column
+    private LocalDateTime timestamp; // Время транзакции
+    @Column
+    private BigDecimal amount; // Сумма транзакции
+    @Column(name = "type", insertable = false, updatable = false)
+    private String type; // Тип транзакции (например, покупка, продажа)
+
+}

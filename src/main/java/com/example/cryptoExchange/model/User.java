@@ -1,11 +1,14 @@
 package com.example.cryptoExchange.model;
 
+import com.example.cryptoExchange.model.Transaction.Transaction;
+import com.example.cryptoExchange.model.Wallet.CryptoWallet;
+import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Table(name = "users")
 @Entity
@@ -14,7 +17,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class User {
 
-    //TODO reset entity WALLET
+    //TODO cut to 2 wallets (changeset)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -26,10 +29,21 @@ public class User {
     private String password; // Пароль
     @Column(nullable = false)
     private String email; // Электронная почта
-    @Column(nullable = false)
-    private BigDecimal balance; // Баланс денежных средств
-    @Column(nullable = false)
-    private BigDecimal currency; // Баланс криптовалютных средств
+
+    @Column
+    private String name; // Имя
+    @Column
+    private String surname; // Фамилия
+    @Column
+    private String phoneNumber; // Телефон
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private MoneyWallet moneyWallet;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private CryptoWallet cryptoWallet;
+
+    @OneToMany(mappedBy = "user")
+    private List<Transaction> transactions;
 
     public String getRole() {
         return "USER";

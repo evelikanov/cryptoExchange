@@ -51,9 +51,21 @@
         </createTable>
     </changeSet>
 
-    <!-- Создание таблицы для BuySellTransaction -->
+    <!-- Создание таблицы для wallet -->
     <changeSet id="4" author="wvbaymler">
-        <createTable tableName="buySellTransaction">
+        <createTable tableName="crypto_wallet">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="decimal(19,4)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Создание таблицы для Transaction -->
+    <changeSet id="5" author="wvbaymler">
+        <createTable tableName="transaction">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -76,7 +88,7 @@
     </changeSet>
 
     <!-- Создание таблицы для User -->
-    <changeSet id="5" author="wvbaymler">
+    <changeSet id="6" author="wvbaymler">
         <createTable tableName="user">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -93,36 +105,8 @@
             <column name="email" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="balance" type="decimal(19,4)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="currency" type="decimal(19,4)">
-                <constraints nullable="false"/>
-            </column>
         </createTable>
     </changeSet>
-
-    <!-- Наполнение таблицы User начальными данными -->
-    <changeSet id="6" author="wvbaymler">
-        <insert tableName="user">
-            <column name="username" value="john_doe"/>
-            <column name="date_of_birth" value="1990-01-01"/>
-            <column name="password" value="encrypted_password"/>
-            <column name="email" value="john.doe@example.com"/>
-            <column name="balance" value="0"/>
-            <column name="currency" value="0"/>
-        </insert>
-        <insert tableName="user">
-            <column name="username" value="jane_doe"/>
-            <column name="date_of_birth" value="1992-02-02"/>
-            <column name="password" value="encrypted_password"/>
-            <column name="email" value="jane.doe@example.com"/>
-            <column name="balance" value="0"/>
-            <column name="currency" value="0"/>
-        </insert>
-    </changeSet>
-
-    <!-- Дополнительные changeSet для наполнения других таблиц -->
 
     <!-- Наполнение таблицы CryptoCurrency начальными данными -->
     <changeSet id="7" author="wvbaymler">
@@ -135,6 +119,46 @@
             <column name="id" valueNumeric="2"/>
             <column name="name" value="Ethereum"/>
             <column name="symbol" value="ETH"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="Tether USDt"/>
+            <column name="symbol" value="USDT"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="4"/>
+            <column name="name" value="BNB"/>
+            <column name="symbol" value="BNB"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="5"/>
+            <column name="name" value="Solana"/>
+            <column name="symbol" value="SOL"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="6"/>
+            <column name="name" value="USDC"/>
+            <column name="symbol" value="USDC"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="7"/>
+            <column name="name" value="XRP"/>
+            <column name="symbol" value="XRP"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="8"/>
+            <column name="name" value="Dogecoin"/>
+            <column name="symbol" value="DOGE"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="9"/>
+            <column name="name" value="Cardano"/>
+            <column name="symbol" value="ADA"/>
+        </insert>
+        <insert tableName="crypto_currency">
+            <column name="id" valueNumeric="10"/>
+            <column name="name" value="Toncoin"/>
+            <column name="symbol" value="TON"/>
         </insert>
     </changeSet>
 
@@ -154,21 +178,10 @@
         </insert>
     </changeSet>
 
-    <!-- Наполнение таблицы wallet начальными данными -->
-    <changeSet id="9" author="wvbaymler">
-        <insert tableName="wallet">
-            <column name="id" valueNumeric="1"/>
-            <column name="balance" valueNumeric="10000"/>
-        </insert>
-        <insert tableName="wallet">
-            <column name="id" valueNumeric="2"/>
-            <column name="balance" valueNumeric="15000"/>
-        </insert>
-    </changeSet>
 
-    <!-- Наполнение таблицы BuySellTransaction начальными данными -->
-    <changeSet id="10" author="wvbaymler">
-        <insert tableName="buySellTransaction">
+    <!-- Наполнение таблицы transaction начальными данными -->
+    <changeSet id="9" author="wvbaymler">
+        <insert tableName="transaction">
             <column name="id" valueNumeric="1"/>
             <column name="wallet_id" valueNumeric="1"/>
             <column name="currency_id" valueNumeric="1"/>
@@ -176,7 +189,7 @@
             <column name="type" value="BUY"/> <!-- Corrected column name from transaction_type to type -->
             <column name="timestamp" valueComputed="TO_TIMESTAMP('2023-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS')"/>
         </insert>
-        <insert tableName="buySellTransaction">
+        <insert tableName="transaction">
             <column name="id" valueNumeric="2"/>
             <column name="wallet_id" valueNumeric="2"/>
             <column name="currency_id" valueNumeric="2"/>
