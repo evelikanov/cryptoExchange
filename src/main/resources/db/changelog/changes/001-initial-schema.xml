@@ -54,9 +54,9 @@
         </createTable>
     </changeSet>
 
-    <!-- Определение таблицы transaction -->
+    <!-- Определение таблицы buySellTransaction -->
     <changeSet id="4" author="wvbaymler">
-        <createTable tableName="transaction">
+        <createTable tableName="buySellTransaction">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>

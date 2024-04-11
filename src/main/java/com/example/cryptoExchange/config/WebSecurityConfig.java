@@ -1,6 +1,11 @@
 package com.example.cryptoExchange.config;
 
+import com.example.cryptoExchange.model.User;
+import com.example.cryptoExchange.model.Wallet.CryptoWallet;
+import com.example.cryptoExchange.model.Wallet.MoneyWallet;
+import com.example.cryptoExchange.model.Wallet.Wallet;
 import com.example.cryptoExchange.service.impl.MyUserDetailsService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -12,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.web.client.RestTemplate;
 
 
 @Configuration
@@ -22,6 +28,14 @@ public class WebSecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return new MyUserDetailsService();
+    }
+    @Bean
+    public User user() {
+        return new User();
+    }
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
     @Bean
@@ -39,7 +53,7 @@ public class WebSecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/data", "/user/wallet", "/user/setting").authenticated()
+                        .requestMatchers("/user/data", "/user/wallet", "/user/setting", "/user/deals").authenticated()
                         .anyRequest().permitAll())
                 .formLogin(form -> form.loginPage("/login")
                         .defaultSuccessUrl("/home", true)

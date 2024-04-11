@@ -6,26 +6,49 @@
 </head>
 <body>
 
-<p>Money on your wallet: </p>
+<label>Your wallet: </label>
 <table>
     <thead>
     <tr>
         <th>Balance</th>
-        <th>Crypto Balance</th>
     </tr>
     </thead>
     <tbody>
     <tr>
-        <td th:text="${balance}"></td>
-        <td th:text="${currency}"></td>
+        <td>RUB <span th:text="${balance}"></span></td>
+    </tr>
+    </tbody>
+</table>
+<table>
+    <thead>
+    <tr>
+        <th>Crypto currencies</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>
+            <span th:text="${cryptoCurrency}"></span>: <span th:text="${amount}"></span>
+        </td>
     </tr>
     </tbody>
 </table>
 <form action="/user/wallet" method="post">
     <p>Top up your account balance</p>
     <p>
-        <input type="number" name="balance" step="any">
-        <input type="number" name="currency" step="any">
+        <select name="currency">
+            <option value="RUB">RUB</option>
+            <input type="number" name="balance" step="any">
+        </select>
+    </p>
+    <p>Choose crypto currency to top up</p>
+    <p>
+        <select name="cryptoCurrency">
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="DOGE">DOGE</option>
+        </select>
+        <input type="number" name="amount" step="any">
     </p>
     <input type="submit" value="Confirm"/>
 </form>

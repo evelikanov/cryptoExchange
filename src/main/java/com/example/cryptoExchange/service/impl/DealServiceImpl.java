@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class DealServiceImpl implements DealService {
-
     private final DealRepository dealRepository;
 
     @Autowired
