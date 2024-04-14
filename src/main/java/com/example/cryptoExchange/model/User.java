@@ -37,10 +37,11 @@ public class User {
     @Column
     private String phoneNumber; // Телефон
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private MoneyWallet moneyWallet;
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private CryptoWallet cryptoWallet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<MoneyWallet> moneyWallet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<CryptoWallet> cryptoWallet;
+
 
     @OneToMany(mappedBy = "user")
     private List<Transaction> transactions;

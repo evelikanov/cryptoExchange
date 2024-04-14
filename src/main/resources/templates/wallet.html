@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Balance</title>
+
 </head>
 <body>
 
@@ -10,12 +11,14 @@
 <table>
     <thead>
     <tr>
-        <th>Balance</th>
+        <th>Currencies</th>
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <td>RUB <span th:text="${balance}"></span></td>
+    <tr th:each="moneyWallet : ${moneyWallets}">
+        <td>
+            <span th:text="${moneyWallet.getSymbol()}"></span>: <span th:text="${moneyWallet.getBalance()}"></span>
+        </td>
     </tr>
     </tbody>
 </table>
@@ -26,30 +29,47 @@
     </tr>
     </thead>
     <tbody>
-    <tr>
+    <tr th:each="cryptoWallet : ${cryptoWallets}">
         <td>
-            <span th:text="${cryptoCurrency}"></span>: <span th:text="${amount}"></span>
+            <span th:text="${cryptoWallet.getSymbol()}"></span>: <span th:text="${cryptoWallet.getAmount()}"></span>
         </td>
     </tr>
     </tbody>
 </table>
 <form action="/user/wallet" method="post">
+    <input type="hidden" name="operationType" value="moneyTopup">
     <p>Top up your account balance</p>
     <p>
         <select name="currency">
             <option value="RUB">RUB</option>
-            <input type="number" name="balance" step="any">
+            <option value="USD">USD</option>
         </select>
+        <input type="number" name="balance" step="any">
     </p>
+    <input type="submit" value="Confirm"/>
+</form>
+<form action="/user/wallet" method="post">
+    <input type="hidden" name="operationType" value="cryptoTopup">
     <p>Choose crypto currency to top up</p>
     <p>
         <select name="cryptoCurrency">
             <option value="BTC">BTC</option>
             <option value="ETH">ETH</option>
+            <option value="USDT">USDT</option>
+            <option value="BNB">BNB</option>
+            <option value="SOL">SOL</option>
+            <option value="USDC">USDC</option>
+            <option value="XRP">XRP</option>
             <option value="DOGE">DOGE</option>
+            <option value="ADA">ADA</option>
+            <option value="TON">TON</option>
         </select>
         <input type="number" name="amount" step="any">
     </p>
+    <div th:if="${SuccessMoney}" style="color: green;">Your money wallet was successfully replenished with: <span th:text="${balance}"></span> <span th:text="${currency}"></span>!</div>
+    <div th:if="${SuccessCrypto}" style="color: green;">Your crypto wallet was successfully replenished with: <span th:text="${amount}"></span> <span th:text="${token}"></span>!</div>
+    <div th:if="${nullError}" style="color: red;">At least one field must be filled</div>
+    <div th:if="${numberError}" style="color: red;">Number can not be equal to 0 or less than 0</div>
     <input type="submit" value="Confirm"/>
 </form>
 <a href="/user/data">User's personal account</a>

@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
-    <style>
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-    </style>
+
 </head>
 <body>
 
 <p>Hello! This is BitSwap cryptoExchange</p>
 <p>Here you can buy or sell Crypto at the best price</p>
-<p th:if="${loggedIn}">
+<p th:if="${loggedIn}" style="color: green;">
     You are logged in as: <strong th:text="${username}"></strong><br>
     <a href="/user/data">User's personal account</a>
 </p>
+<div th:if="${param.registrationSuccess}" class="alert alert-success" role="alert" style="color: green;">
+    Registration was successful! Now you can log in
+</div>
+<div th:if="${param.deleteSuccess}" class="alert alert-success" role="alert" style="color: red;">
+    Account was deleted successfully!
+</div>
 <p th:unless="${loggedIn}">
     <a href="/login">Log in or Create an account</a>
 </p>

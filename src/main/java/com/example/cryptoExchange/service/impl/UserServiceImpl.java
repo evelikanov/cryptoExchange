@@ -1,5 +1,6 @@
 package com.example.cryptoExchange.service.impl;
 
+import com.example.cryptoExchange.Exceptions.ErrorMessages;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.repository.UserRepository;
 import com.example.cryptoExchange.service.UserService;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,7 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
     public Optional<User> findUserByUsername(String username) {
+
         return userRepository.findByUsername(username);
     }
 
@@ -47,7 +50,7 @@ public class UserServiceImpl implements UserService {
     }
     @Transactional
     public String updateUserDetails(Long id, String name, String surname, String phoneNumber, String email, String dateOfBirth) {
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(ErrorMessages.USER_NOT_FOUND));
 
         if(!name.isEmpty()) {
             user.setName(name);
@@ -59,9 +62,6 @@ public class UserServiceImpl implements UserService {
             user.setPhoneNumber(phoneNumber);
         }
         if(!email.isEmpty()) {
-            if (userRepository.existsByEmail(email)) {
-                throw new IllegalArgumentException("Email already exists");
-            }
             user.setEmail(email);
         }
         if(!dateOfBirth.isEmpty()) {
@@ -71,20 +71,43 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    public String isEmptySettingField(String name, String surname, String phoneNumber, String dateOfBirth, String email) {
+        if(name.isEmpty() && surname.isEmpty() && phoneNumber.isEmpty() && dateOfBirth.isEmpty() && email.isEmpty()) {
+            throw new IllegalArgumentException(ErrorMessages.AT_LEAST_ONE_FIELD);
+        }
+        return null;
+    }
+
+    public String isNullRegistrationField(String username, String password, String dateOfBirth, String email) {
+        if(username.isEmpty() || password.isEmpty() || dateOfBirth.isEmpty() || email.isEmpty()) {
+            throw new IllegalArgumentException(ErrorMessages.FIELDS_NOT_FILLED);
+        }
+        return null;
+    }
+
+    public String isExistedEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException(ErrorMessages.EMAIL_TAKEN);
+        }
+        return null;
+    }
+
+    public String isExistedUser(String username, String email) {
+        if(userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException(ErrorMessages.USERNAME_TAKEN);
+        } else if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException(ErrorMessages.EMAIL_TAKEN);
+        }
+        return null;
+    }
+
+
     @Transactional
     public String createUser(String username, String password, String dateOfBirth, String email) {
         User user = new User();
 
-        if(userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("Username has already been taken");
-        } else {
-            user.setUsername(String.valueOf(username));
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("E-mail has already been taken");
-        } else {
-            user.setEmail(email);
-        }
+        user.setUsername(username);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setDateOfBirth(dateOfBirth);
         userRepository.save(user);

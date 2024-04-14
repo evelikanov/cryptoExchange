@@ -1,7 +1,7 @@
 package com.example.cryptoExchange.Controllers;
 
 import com.example.cryptoExchange.model.CryptoCurrencyTariffs;
-import com.example.cryptoExchange.service.impl.CryptoCurrencyServiceImpl;
+import com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl.CryptoCurrencyServiceImpl;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;

@@ -1,23 +1,28 @@
 package com.example.cryptoExchange.Controllers;
 
+import com.example.cryptoExchange.Exceptions.ChangeDataException;
+import com.example.cryptoExchange.Exceptions.ErrorMessages;
+import com.example.cryptoExchange.Exceptions.NegativeNumberException;
 import com.example.cryptoExchange.model.Wallet.CryptoWallet;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.model.Wallet.MoneyWallet;
-import com.example.cryptoExchange.repository.CryptoWalletRepository;
+import com.example.cryptoExchange.repository.WalletRepository.CryptoWalletRepository;
 import com.example.cryptoExchange.repository.TransactionRepository;
-import com.example.cryptoExchange.repository.WalletRepository;
-import com.example.cryptoExchange.service.impl.CryptoWalletServiceImpl;
+import com.example.cryptoExchange.repository.WalletRepository.MoneyWalletRepository;
+import com.example.cryptoExchange.service.impl.WalletServiceImpl.CryptoWalletServiceImpl;
 import com.example.cryptoExchange.service.impl.TransactionServiceImpl;
 import com.example.cryptoExchange.service.impl.UserServiceImpl;
-import com.example.cryptoExchange.service.impl.WalletServiceImpl;
+import com.example.cryptoExchange.service.impl.WalletServiceImpl.MoneyWalletServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -25,9 +30,9 @@ public class UserController {
     @Autowired
     private UserServiceImpl userServiceImpl;
     @Autowired
-    private WalletServiceImpl walletServiceImpl;
+    private MoneyWalletServiceImpl moneyWalletServiceImpl;
     @Autowired
-    private WalletRepository walletRepository;
+    private MoneyWalletRepository moneyWalletRepository;
     @Autowired
     private CryptoWalletServiceImpl cryptoWalletServiceImpl;
     @Autowired
@@ -53,37 +58,71 @@ public class UserController {
     public ModelAndView deleteAccount(HttpSession session, Principal principal) {
         userServiceImpl.deleteUser(principal.getName());
         session.invalidate();
-        return new ModelAndView("redirect:/home");
+        RedirectView redirectView = new RedirectView("/home");
+        redirectView.addStaticAttribute("deleteSuccess", true);
+        return new ModelAndView(redirectView);
     }
 
     @GetMapping("/wallet")
     public ModelAndView walletGetBalance(Model model, Principal principal) {
         String username = principal.getName();
 
-        MoneyWallet wallet = walletServiceImpl.getBalanceByUsername(username);
-        CryptoWallet cryptoWallet = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
+        List<MoneyWallet> wallet = moneyWalletServiceImpl.getMoneyBalanceByUsername(username);
+        List<CryptoWallet> cryptoWallets = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
 
-        model.addAttribute("balance", wallet.getBalance());
-        model.addAttribute("cryptoCurrency", cryptoWallet.getCryptoCurrency());
-        model.addAttribute("amount", cryptoWallet.getAmount());
+
+        model.addAttribute("moneyWallets", wallet);
+        model.addAttribute("cryptoWallets", cryptoWallets);
         return new ModelAndView("/wallet");
     }
+
     @PostMapping("/wallet")
-    public ModelAndView walletPostBalance(Model model, Principal principal,
-                               @RequestParam("balance") BigDecimal balance,
-                               @RequestParam("cryptoCurrency") String cryptoCurrency,
-                               @RequestParam("amount") BigDecimal amount) {
+    public ModelAndView walletMoneyPostBalance(Model model, Principal principal,
+                               @RequestParam("operationType") String operationType,
+                               @RequestParam(value = "currency", required = false) String currency,
+                               @RequestParam(value = "balance", required = false) BigDecimal balance,
+                               @RequestParam(value = "cryptoCurrency", required = false) String cryptoCurrency,
+                               @RequestParam(value = "amount", required = false) BigDecimal amount) {
         String username = principal.getName();
 
-        CryptoWallet cryptoWallet = cryptoWalletServiceImpl.setNewCryptoBalance(username, cryptoCurrency, amount);
-        MoneyWallet wallet = walletServiceImpl.setNewBalance(username, balance);
+        List<CryptoWallet> cryptoWallet = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
+        List<MoneyWallet> moneyWallet = moneyWalletServiceImpl.getMoneyBalanceByUsername(username);
 
-        model.addAttribute("balance", wallet.getBalance());
-        model.addAttribute("cryptoCurrency", cryptoWallet.getCryptoCurrency());
-        model.addAttribute("amount", cryptoWallet.getAmount());
+        if ("cryptoTopup".equals(operationType)) {
+            try {
+                if (amount != null) {
+                    cryptoWalletServiceImpl.isNegativeCryptoWalletField(amount);
+                    cryptoWalletServiceImpl.setNewCryptoBalance(username, cryptoCurrency, amount);
+                    cryptoWallet = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
+                    model.addAttribute("token", cryptoCurrency);
+                    model.addAttribute("amount", amount);
+                    model.addAttribute("SuccessCrypto", true);
+                } else {
+                    model.addAttribute("nullError", ErrorMessages.AT_LEAST_ONE_FIELD);
+                }
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("numberError", e.getMessage());
+            }
+        } else if ("moneyTopup".equals(operationType)) {
+            try {
+                if (balance != null) {
+                    moneyWalletServiceImpl.isNegativeMoneyWalletField(balance);
+                    moneyWalletServiceImpl.setNewMoneyBalance(username, currency, balance);
+                    moneyWallet = moneyWalletServiceImpl.getMoneyBalanceByUsername(username);
+                    model.addAttribute("currency", currency);
+                    model.addAttribute("balance", balance);
+                    model.addAttribute("SuccessMoney", true);
+                } else {
+                    model.addAttribute("nullError", ErrorMessages.AT_LEAST_ONE_FIELD);
+                }
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("numberError", e.getMessage());
+            }
+        }
+        model.addAttribute("cryptoWallets", cryptoWallet);
+        model.addAttribute("moneyWallets", moneyWallet);
         return new ModelAndView("/wallet");
     }
-
     @GetMapping("/setting")
     public ModelAndView setting(Model model, Principal principal) {
         String username = principal.getName();
@@ -98,31 +137,25 @@ public class UserController {
                                       @RequestParam("phoneNumber") String phoneNumber,
                                       @RequestParam("email") String email,
                                       @RequestParam("dateOfBirth") String dateOfBirth) {
-        ModelAndView modelAndView = new ModelAndView("/setting");
         String loggedUsername = principal.getName();
+        User user = userServiceImpl.getDetailsByUsername(loggedUsername);
+        Long userId = user.getId();
 
-        if (name.isEmpty() && surname.isEmpty() && phoneNumber.isEmpty() && email.isEmpty() && dateOfBirth.isEmpty()) {
-            modelAndView.addObject("nullError", "At least one field must be filled");
-            User user = userServiceImpl.getDetailsByUsername(loggedUsername);
-            model.addAttribute("user", user);
-            return modelAndView;
-        } else {
-            try {
-                User user = userServiceImpl.getDetailsByUsername(loggedUsername);
-                Long newId = user.getId();
-                userServiceImpl.updateUserDetails(newId, name, surname, phoneNumber, email, dateOfBirth);
-
-                User userDetails = userServiceImpl.getDetailsByUsername(loggedUsername);
-                User newUserDetails = userDetails;
-
-                model.addAttribute("user", newUserDetails);
-                return new ModelAndView("/setting");
-            } catch (IllegalArgumentException e) {
-                modelAndView.addObject("emailError", e.getMessage());
-                User user = userServiceImpl.getDetailsByUsername(loggedUsername);
-                model.addAttribute("user", user);
-                return modelAndView;
+        try {
+            userServiceImpl.isEmptySettingField(name, surname, phoneNumber, email, dateOfBirth);
+            userServiceImpl.isExistedEmail(email);
+            userServiceImpl.updateUserDetails(userId, name, surname, phoneNumber, email, dateOfBirth);
+            model.addAttribute("Success", true);
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().equals(ErrorMessages.AT_LEAST_ONE_FIELD)) {
+                model.addAttribute("nullError", ErrorMessages.AT_LEAST_ONE_FIELD);
+            } else if (e.getMessage().equals(ErrorMessages.EMAIL_TAKEN)) {
+                model.addAttribute("emailError", ErrorMessages.EMAIL_TAKEN);
             }
         }
+        User updatedUser = userServiceImpl.getDetailsByUsername(loggedUsername);
+        model.addAttribute("user", updatedUser);
+
+        return new ModelAndView("/setting");
     }
 }

@@ -1,8 +1,8 @@
-package com.example.cryptoExchange.service.impl;
+package com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl;
 
-import com.example.cryptoExchange.model.CryptoCurrency;
+import com.example.cryptoExchange.model.ExchangeCurrency.CryptoCurrency;
 import com.example.cryptoExchange.model.CryptoCurrencyTariffs;
-import com.example.cryptoExchange.repository.CryptoCurrencyRepository;
+import com.example.cryptoExchange.repository.ExchangeCurrencyRepository.CryptoCurrencyRepository;
 import com.example.cryptoExchange.service.CryptoCurrencyService;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.nimbusds.jose.shaded.gson.JsonParser;
@@ -57,7 +57,9 @@ public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
         }
         return cryptoBuy;
     }
-
+    public List<String> getAllCryptoCurrenciesSymbolList() {
+        return cryptoCurrencyRepository.findAllSymbols();
+    }
     @Autowired
     public CryptoCurrencyServiceImpl(RestTemplate restTemplate, CryptoCurrencyRepository cryptoCurrencyRepository) {
         this.restTemplate = restTemplate;
