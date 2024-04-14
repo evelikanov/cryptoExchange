@@ -4,7 +4,6 @@ import com.example.cryptoExchange.model.Transaction.DepositTransaction;
 import com.example.cryptoExchange.model.Transaction.Transaction;
 import com.example.cryptoExchange.model.Transaction.WithdrawalTransaction;
 import com.example.cryptoExchange.model.User;
-import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import com.example.cryptoExchange.model.Wallet.Wallet;
 import com.example.cryptoExchange.repository.TransactionRepository;
 import com.example.cryptoExchange.repository.UserRepository;
