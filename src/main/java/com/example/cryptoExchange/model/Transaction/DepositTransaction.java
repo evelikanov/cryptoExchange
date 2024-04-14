@@ -10,5 +10,4 @@ import lombok.Setter;
 @Setter
 @DiscriminatorValue("DEPOSIT")
 public class DepositTransaction extends Transaction {
-
 }

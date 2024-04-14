@@ -1,16 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Reviews</title>
-
-
+    <title>Transaction history</title>
 </head>
 <body>
 <h1>Transaction history</h1>
-<p>
-    Here you can see your transaction history
-</p>
+<table>
+    <thead>
+    <tr>
+        <th>Timestamp</th>
+        <th>Quantity</th>
+        <th>Exchange currency</th>
+        <th>Transaction type</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="transaction : ${transactions}">
+        <td th:text="${transaction.timestamp}"></td>
+        <td th:text="${transaction.quantity}"></td>
+        <td th:text="${transaction.exchangeCurrency}"></td>
+        <td th:if="${transaction.type == 'DEPOSIT'}">Deposit</td>
+        <td th:if="${transaction.type == 'WITHDRAWAL'}">Withdrawal</td>
+    </tr>
+    </tbody>
+</table>
 <a href="/user/data">User's personal account</a>
 </body>
 </html>

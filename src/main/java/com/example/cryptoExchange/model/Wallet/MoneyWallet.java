@@ -20,6 +20,4 @@ public class MoneyWallet extends Wallet {
     @ManyToOne
     @JoinColumn(name = "currency_id")
     private Currency currency;
-
-
 }

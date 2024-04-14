@@ -3,6 +3,7 @@ package com.example.cryptoExchange.service.impl.WalletServiceImpl;
 import com.example.cryptoExchange.Exceptions.ErrorMessages;
 import com.example.cryptoExchange.model.ExchangeCurrency.Currency;
 import com.example.cryptoExchange.model.User;
+import com.example.cryptoExchange.model.Wallet.CryptoWallet;
 import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import com.example.cryptoExchange.repository.ExchangeCurrencyRepository.CurrencyRepository;
 import com.example.cryptoExchange.repository.UserRepository;
@@ -57,8 +58,6 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
             throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
         }
     }
-
-
     //TODO подумать как объединить два кошелька в один сервис
     public void isEmptyMoneyWalletField(BigDecimal balance) {
         if(balance == null) {
@@ -72,7 +71,13 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         return moneyWallet;
     }
 
-    public MoneyWallet setNewMoneyBalance(String username, String currency, BigDecimal balance) {
+    public MoneyWallet getMoneyBalanceByUsernameAndCurrency(String username, String currency) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);
+        return moneyWallet;
+    }
+
+    public void topUpMoneyBalance(String username, String currency, BigDecimal balance) {
         User user = userRepository.findByUsername(username).orElse(null);
 
         MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);
@@ -80,6 +85,14 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         BigDecimal newBalance = moneyWallet.getBalance().add(balance);
         moneyWallet.setBalance(newBalance);
         moneyWalletRepository.save(moneyWallet);
-        return moneyWallet;
+    }
+    public void withdrawMoneyBalance(String username, String cryptoCurrency, BigDecimal amount) {
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);
+
+        BigDecimal newCryptoBalance = moneyWallet.getBalance().subtract(amount);
+        moneyWallet.setBalance(newCryptoBalance);
+        moneyWalletRepository.save(moneyWallet);
     }
 }
