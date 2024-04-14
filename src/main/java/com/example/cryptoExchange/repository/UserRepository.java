@@ -12,12 +12,11 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User findByEmail(String email);
+    Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     void deleteByUsername(String username);
-    MoneyWallet save(MoneyWallet wallet);
     @Modifying
     @Query("UPDATE User u SET " +
             "u.name = CASE WHEN :name IS NOT NULL AND :name <> '' THEN :name ELSE u.name END, " +

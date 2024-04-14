@@ -1,8 +1,5 @@
 package com.example.cryptoExchange.Controllers;
 
-import com.example.cryptoExchange.model.CryptoCurrency;
-import com.example.cryptoExchange.service.CryptoCurrencyService;
-import com.example.cryptoExchange.service.impl.CryptoCurrencyServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

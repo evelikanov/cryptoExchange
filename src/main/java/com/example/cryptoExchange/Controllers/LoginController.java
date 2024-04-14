@@ -1,5 +1,6 @@
 package com.example.cryptoExchange.Controllers;
 
+import com.example.cryptoExchange.Exceptions.ErrorMessages;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.repository.UserRepository;
 import com.example.cryptoExchange.service.impl.UserServiceImpl;
@@ -23,7 +24,7 @@ public class LoginController {
     private UserRepository userRepository;
 
     @GetMapping("/login")
-    public ModelAndView login(@RequestParam(value = "error", defaultValue = "false") boolean loginError) {
+    public ModelAndView login(@RequestParam(value = ErrorMessages.INVALID_USER_PASS, defaultValue = "false") boolean loginError) {
         return new ModelAndView("/login");
     }
 

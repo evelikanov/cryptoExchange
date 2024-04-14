@@ -1,4 +1,4 @@
-package com.example.cryptoExchange.model;
+package com.example.cryptoExchange.model.ExchangeCurrency;
 
 import jakarta.persistence.*;
 import lombok.Getter;

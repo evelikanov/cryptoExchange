@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Your data</title>
+
+
 </head>
 <h1>Edit personal data</h1>
 <body>
@@ -43,7 +45,8 @@
     </p>
 
     <div th:if="${nullError}" style="color: red;">At least one field must be filled</div>
-    <div th:if="${emailError}" style="color: red;">E-mail is already in use</div>
+    <div th:if="${emailError}" style="color: red;">E-mail has already been taken</div>
+    <div th:if="${Success}" style="color: green;">User's data has been successfully changed!</div>
 
     <input type="submit" value="Confirm"/>
 </form>
