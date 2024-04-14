@@ -13,8 +13,6 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class CryptoWallet extends Wallet {
-
-
     @Column
     private BigDecimal amount;
     @Column

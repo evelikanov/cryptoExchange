@@ -53,7 +53,8 @@ public class WebSecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/data", "/user/wallet", "/user/setting", "/user/deals").authenticated()
+                        .requestMatchers("/user/data", "/user/wallet", "/user/setting",
+                                "/user/deals", "/user/wallet/topup", "/user/wallet/withdraw").authenticated()
                         .anyRequest().permitAll())
                 .formLogin(form -> form.loginPage("/login")
                         .defaultSuccessUrl("/home", true)

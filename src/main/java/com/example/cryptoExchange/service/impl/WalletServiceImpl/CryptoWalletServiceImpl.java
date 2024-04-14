@@ -70,8 +70,13 @@ public class CryptoWalletServiceImpl implements CryptoWalletService {
         cryptoWallet.sort(Comparator.comparingLong(CryptoWallet::getId));
         return cryptoWallet;
     }
+    public CryptoWallet getCryptoBalanceByUsernameAndCurrency(String username, String cryptoCurrency) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        CryptoWallet cryptoWallet = cryptoWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);
+        return cryptoWallet;
+    }
 
-    public CryptoWallet setNewCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
+    public void topUpCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
         User user = userRepository.findByUsername(username).orElse(null);
 
         CryptoWallet cryptoWallet = cryptoWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);
@@ -79,6 +84,14 @@ public class CryptoWalletServiceImpl implements CryptoWalletService {
         BigDecimal newCryptoBalance = cryptoWallet.getAmount().add(amount);
         cryptoWallet.setAmount(newCryptoBalance);
         cryptoWalletRepository.save(cryptoWallet);
-        return cryptoWallet;
+    }
+    public void withdrawCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        CryptoWallet cryptoWallet = cryptoWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);
+
+        BigDecimal newCryptoBalance = cryptoWallet.getAmount().subtract(amount);
+        cryptoWallet.setAmount(newCryptoBalance);
+        cryptoWalletRepository.save(cryptoWallet);
     }
 }

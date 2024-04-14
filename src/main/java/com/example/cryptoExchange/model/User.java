@@ -16,8 +16,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class User {
-
-    //TODO cut to 2 wallets (changeset)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -43,7 +41,7 @@ public class User {
     private List<CryptoWallet> cryptoWallet;
 
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 
     public String getRole() {

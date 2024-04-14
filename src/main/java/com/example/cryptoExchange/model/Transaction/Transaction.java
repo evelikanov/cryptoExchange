@@ -38,8 +38,11 @@ public class Transaction {
     @Column
     private LocalDateTime timestamp; // Время транзакции
     @Column
-    private BigDecimal amount; // Сумма транзакции
+    private BigDecimal quantity; // Сумма транзакции
     @Column(name = "type", insertable = false, updatable = false)
     private String type; // Тип транзакции (например, покупка, продажа)
+
+    @Column
+    private String exchangeCurrency;
 
 }

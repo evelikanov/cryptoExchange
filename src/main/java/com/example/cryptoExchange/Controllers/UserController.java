@@ -3,9 +3,11 @@ package com.example.cryptoExchange.Controllers;
 import com.example.cryptoExchange.Exceptions.ChangeDataException;
 import com.example.cryptoExchange.Exceptions.ErrorMessages;
 import com.example.cryptoExchange.Exceptions.NegativeNumberException;
+import com.example.cryptoExchange.model.Transaction.Transaction;
 import com.example.cryptoExchange.model.Wallet.CryptoWallet;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.model.Wallet.MoneyWallet;
+import com.example.cryptoExchange.model.Wallet.Wallet;
 import com.example.cryptoExchange.repository.WalletRepository.CryptoWalletRepository;
 import com.example.cryptoExchange.repository.TransactionRepository;
 import com.example.cryptoExchange.repository.WalletRepository.MoneyWalletRepository;
@@ -44,6 +46,9 @@ public class UserController {
 
     @GetMapping("/deals")
     public ModelAndView deals(Model model, Principal principal) {
+        String username = principal.getName();
+        List<Transaction> transactions = transactionServiceImpl.getTransactionsByUsername(username);
+        model.addAttribute("transactions", transactions);
         return new ModelAndView("/deals");
     }
     @GetMapping("/data")
@@ -75,25 +80,28 @@ public class UserController {
         model.addAttribute("cryptoWallets", cryptoWallets);
         return new ModelAndView("/wallet");
     }
+    @GetMapping("/wallet/topup")
+    public ModelAndView walletTopUpBalance() {
+        return new ModelAndView("/topup");
+    }
 
-    @PostMapping("/wallet")
-    public ModelAndView walletMoneyPostBalance(Model model, Principal principal,
+    @PostMapping("/wallet/topup")
+    public ModelAndView walletTopUpPostBalance(Model model, Principal principal,
                                @RequestParam("operationType") String operationType,
                                @RequestParam(value = "currency", required = false) String currency,
                                @RequestParam(value = "balance", required = false) BigDecimal balance,
                                @RequestParam(value = "cryptoCurrency", required = false) String cryptoCurrency,
                                @RequestParam(value = "amount", required = false) BigDecimal amount) {
         String username = principal.getName();
-
-        List<CryptoWallet> cryptoWallet = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
-        List<MoneyWallet> moneyWallet = moneyWalletServiceImpl.getMoneyBalanceByUsername(username);
+        User user = userServiceImpl.getDetailsByUsername(username);
 
         if ("cryptoTopup".equals(operationType)) {
             try {
                 if (amount != null) {
                     cryptoWalletServiceImpl.isNegativeCryptoWalletField(amount);
-                    cryptoWalletServiceImpl.setNewCryptoBalance(username, cryptoCurrency, amount);
-                    cryptoWallet = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
+                    cryptoWalletServiceImpl.topUpCryptoBalance(username, cryptoCurrency, amount);
+                    Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
+                    transactionServiceImpl.performCryptoDepositTransaction(user.getId(), cryptoWalletId, cryptoCurrency, amount);
                     model.addAttribute("token", cryptoCurrency);
                     model.addAttribute("amount", amount);
                     model.addAttribute("SuccessCrypto", true);
@@ -107,8 +115,9 @@ public class UserController {
             try {
                 if (balance != null) {
                     moneyWalletServiceImpl.isNegativeMoneyWalletField(balance);
-                    moneyWalletServiceImpl.setNewMoneyBalance(username, currency, balance);
-                    moneyWallet = moneyWalletServiceImpl.getMoneyBalanceByUsername(username);
+                    moneyWalletServiceImpl.topUpMoneyBalance(username, currency, balance);
+                    Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
+                    transactionServiceImpl.performMoneyDepositTransaction(user.getId(), moneyWalletId, currency, balance);
                     model.addAttribute("currency", currency);
                     model.addAttribute("balance", balance);
                     model.addAttribute("SuccessMoney", true);
@@ -119,9 +128,58 @@ public class UserController {
                 model.addAttribute("numberError", e.getMessage());
             }
         }
-        model.addAttribute("cryptoWallets", cryptoWallet);
-        model.addAttribute("moneyWallets", moneyWallet);
-        return new ModelAndView("/wallet");
+        return new ModelAndView("/topup");
+    }
+    @GetMapping("/wallet/withdraw")
+    public ModelAndView walletWithdrawFromBalance() {
+        return new ModelAndView("/withdraw");
+    }
+
+    //TODO сделать уведомление на невозможность снятия больше чем есть в балансе
+    @PostMapping("/wallet/withdraw")
+    public ModelAndView walletWithDrawFromPostBalance(Model model, Principal principal,
+                                               @RequestParam("operationType") String operationType,
+                                               @RequestParam(value = "currency", required = false) String currency,
+                                               @RequestParam(value = "balance", required = false) BigDecimal balance,
+                                               @RequestParam(value = "cryptoCurrency", required = false) String cryptoCurrency,
+                                               @RequestParam(value = "amount", required = false) BigDecimal amount) {
+        String username = principal.getName();
+        User user = userServiceImpl.getDetailsByUsername(username);
+
+        if ("cryptoWithdraw".equals(operationType)) {
+            try {
+                if (amount != null) {
+                    cryptoWalletServiceImpl.isNegativeCryptoWalletField(amount);
+                    cryptoWalletServiceImpl.withdrawCryptoBalance(username, cryptoCurrency, amount);
+                    Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
+                    transactionServiceImpl.performCryptoWithdrawTransaction(user.getId(), cryptoWalletId, cryptoCurrency, amount);
+                    model.addAttribute("token", cryptoCurrency);
+                    model.addAttribute("amount", amount);
+                    model.addAttribute("SuccessCrypto", true);
+                } else {
+                    model.addAttribute("nullError", ErrorMessages.AT_LEAST_ONE_FIELD);
+                }
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("numberError", e.getMessage());
+            }
+        } else if ("moneyWithdraw".equals(operationType)) {
+            try {
+                if (balance != null) {
+                    moneyWalletServiceImpl.isNegativeMoneyWalletField(balance);
+                    moneyWalletServiceImpl.withdrawMoneyBalance(username, currency, balance);
+                    Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
+                    transactionServiceImpl.performMoneyWithdrawTransaction(user.getId(), moneyWalletId, currency, balance);
+                    model.addAttribute("currency", currency);
+                    model.addAttribute("balance", balance);
+                    model.addAttribute("SuccessMoney", true);
+                } else {
+                    model.addAttribute("nullError", ErrorMessages.AT_LEAST_ONE_FIELD);
+                }
+            } catch (IllegalArgumentException e) {
+                model.addAttribute("numberError", e.getMessage());
+            }
+        }
+        return new ModelAndView("/withdraw");
     }
     @GetMapping("/setting")
     public ModelAndView setting(Model model, Principal principal) {
