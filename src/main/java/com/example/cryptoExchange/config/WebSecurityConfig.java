@@ -1,6 +1,11 @@
 package com.example.cryptoExchange.config;
 
-import com.example.cryptoExchange.service.MyUserDetailsService;
+import com.example.cryptoExchange.model.User;
+import com.example.cryptoExchange.model.Wallet.CryptoWallet;
+import com.example.cryptoExchange.model.Wallet.MoneyWallet;
+import com.example.cryptoExchange.model.Wallet.Wallet;
+import com.example.cryptoExchange.service.impl.MyUserDetailsService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -12,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.web.client.RestTemplate;
 
 
 @Configuration
@@ -23,6 +29,14 @@ public class WebSecurityConfig {
     public UserDetailsService userDetailsService() {
         return new MyUserDetailsService();
     }
+    @Bean
+    public User user() {
+        return new User();
+    }
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -32,19 +46,23 @@ public class WebSecurityConfig {
         return provider;
     }
 
+
+    //TODO turn on csrf
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/home", "/login", "/registration", "cryptoCurrencyList").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/user/data", "/user/wallet", "/user/setting",
+                                "/user/deals", "/user/wallet/topup", "/user/wallet/withdraw").authenticated()
+                        .anyRequest().permitAll())
                 .formLogin(form -> form.loginPage("/login")
                         .defaultSuccessUrl("/home", true)
-                        .failureUrl("/login")
+                        .failureUrl("/login?error=true")
                         .permitAll())
                 .logout(logout -> logout
                         .logoutSuccessUrl("/home"))
+                .authenticationProvider(authenticationProvider())
                 .build();
     }
 

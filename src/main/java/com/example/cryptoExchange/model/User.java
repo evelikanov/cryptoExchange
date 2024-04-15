@@ -1,9 +1,14 @@
 package com.example.cryptoExchange.model;
 
+import com.example.cryptoExchange.model.Transaction.Transaction;
+import com.example.cryptoExchange.model.Wallet.CryptoWallet;
+import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Table(name = "users")
 @Entity
@@ -11,7 +16,6 @@ import lombok.NoArgsConstructor;
 @Setter
 @NoArgsConstructor
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -24,9 +28,23 @@ public class User {
     @Column(nullable = false)
     private String email; // Электронная почта
 
+    @Column
+    private String name; // Имя
+    @Column
+    private String surname; // Фамилия
+    @Column
+    private String phoneNumber; // Телефон
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<MoneyWallet> moneyWallet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<CryptoWallet> cryptoWallet;
+
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Transaction> transactions;
+
     public String getRole() {
         return "USER";
     }
-//    @Column(nullable = false)
-//    private String role;
 }

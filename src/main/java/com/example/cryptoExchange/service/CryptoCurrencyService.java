@@ -1,6 +1,6 @@
 package com.example.cryptoExchange.service;
 
-import com.example.cryptoExchange.model.CryptoCurrency;
+import com.example.cryptoExchange.model.ExchangeCurrency.CryptoCurrency;
 
 import java.util.List;
 

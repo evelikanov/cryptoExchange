@@ -1,20 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>User's personal account</title>
-</head>
-<body>
-<p>Personal data</p>
-<p>Name/Surname</p>
-<p>Age</p>
-<p>email</p>
-<a href="/user/wallet">Your wallet</a>
-<a href="/cryptoCurrencyList">List of cryptocurrencies</a>
-<a href="/home">Home page</a>
 
+
+</head>
+<h1>Your personal data</h1>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>username</th>
+        <th>name</th>
+        <th>surname</th>
+        <th>phone number</th>
+        <th>date of birthday</th>
+        <th>e-mail</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td th:text="${user.username}"></td>
+        <td th:text="${user.name}"></td>
+        <td th:text="${user.surname}"></td>
+        <td th:text="${user.phoneNumber}"></td>
+        <td th:text="${user.dateOfBirth}"></td>
+        <td th:text="${user.email}"></td>
+    </tr>
+    </tbody>
+</table>
+<a href="/home">Home page</a>
+<a href="/user/wallet">Your wallet</a>
+<a href="/user/deals">Your transaction history</a>
+<a href="/cryptoCurrencyList">List of Crypto Currencies</a>
+<a href="/user/setting">Edit your data</a>
 <form action="/logout" method="post">
     <input type="submit" value="Sign Out"/>
+</form>
+<form action="/user/data" method="post">
+    <input type="hidden" name="_method" value="DELETE">
+    <input type="submit" value="Delete account"/>
 </form>
 </body>
 </html>

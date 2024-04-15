@@ -1,15 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Balance</title>
+
 </head>
 <body>
 
-<p>Wallet</p>
-<p>Money on your wallet: </p>
-<p>Cryptocurrency on your wallet: </p>
-<a href="/user/data">User's personal account</a>
-<a href="/cryptoCurrencyList">List of cryptocurrencies</a>
+<label>Your wallet: </label>
+<table>
+    <thead>
+    <tr>
+        <th>Currencies</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="moneyWallet : ${moneyWallets}">
+        <td>
+            <span th:text="${moneyWallet.getSymbol()}"></span>: <span th:text="${moneyWallet.getBalance()}"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<table>
+    <thead>
+    <tr>
+        <th>Crypto currencies</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cryptoWallet : ${cryptoWallets}">
+        <td>
+            <span th:text="${cryptoWallet.getSymbol()}"></span>: <span th:text="${cryptoWallet.getAmount()}"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<p><a href="/user/wallet/topup">Top up your balance</a></p>
+<p><a href="/user/wallet/withdraw">Withdraw from balance</a></p>
+<p><a href="/user/data">User's personal account</a></p>
+<p><a href="/cryptoCurrencyList">List of Crypto Currencies</a></p>
 </body>
 </html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Exchange rates</title>
+
+</head>
+<body>
+<h1>Exchange rates</h1>
+
+<table>
+    <tr>
+        <td>
+            <h2>You give away</h2>
+            <ul>
+                <li th:each="crypto : ${cryptoBuy}" th:text="${crypto.name} + ' - Price: $' + ${crypto.price}"></li>
+            </ul>
+        </td>
+        <td>
+            <h2>You get</h2>
+            <ul>
+                <li th:each="crypto : ${cryptoSell}" th:text="${crypto.name} + ' - Price: $' + ${crypto.price}"></li>
+            </ul>
+        </td>
+    </tr>
+</table>
+<a href="/home">Home page</a>
+</body>
+</html>
