@@ -19,7 +19,12 @@ public class CryptoCurrency {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column
     private Long id;
+    @Column
     private String name; // Название криптовалюты
+    @Column
     private String symbol; // Символ криптовалюты, например BTC
+    @Column
+    private BigDecimal rate; // Текущая цена криптовалюты
 }

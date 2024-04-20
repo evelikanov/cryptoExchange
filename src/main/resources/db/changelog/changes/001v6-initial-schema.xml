@@ -63,7 +63,7 @@
         </createTable>
     </changeSet>
 
-    <!-- Создание таблицы для Transaction -->
+    <!-- Создание таблицы для TransactionMessages -->
     <changeSet id="5" author="wvbaymler">
         <createTable tableName="transaction">
             <column name="id" type="bigint" autoIncrement="true">

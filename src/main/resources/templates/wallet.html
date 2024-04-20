@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Balance</title>
-
 </head>
 <body>
 
@@ -15,7 +14,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="moneyWallet : ${moneyWallets}">
+    <tr th:each="moneyWallet : ${moneyWalletMark}">
         <td>
             <span th:text="${moneyWallet.getSymbol()}"></span>: <span th:text="${moneyWallet.getBalance()}"></span>
         </td>
@@ -29,7 +28,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="cryptoWallet : ${cryptoWallets}">
+    <tr th:each="cryptoWallet : ${cryptoWalletMark}">
         <td>
             <span th:text="${cryptoWallet.getSymbol()}"></span>: <span th:text="${cryptoWallet.getAmount()}"></span>
         </td>

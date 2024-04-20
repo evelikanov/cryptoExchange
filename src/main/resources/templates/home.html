@@ -10,7 +10,7 @@
 <p>Hello! This is BitSwap cryptoExchange</p>
 <p>Here you can buy or sell Crypto at the best price</p>
 <p th:if="${loggedIn}" style="color: green;">
-    You are logged in as: <strong th:text="${username}"></strong><br>
+    You are logged in as: <strong th:text="${loggedUser}"></strong><br>
     <a href="/user/data">User's personal account</a>
 </p>
 <div th:if="${param.registrationSuccess}" class="alert alert-success" role="alert" style="color: green;">
@@ -23,9 +23,6 @@
     <a href="/login">Log in or Create an account</a>
 </p>
 <p>
-    <a href="/cryptoCurrencyList">Cryptocurrencies list</a>
-</p>
-<p>
     <a href="/aboutService">About service</a>
 </p>
 <p>
@@ -33,9 +30,6 @@
 </p>
 <p>
     <a href="/reviews">Reviews</a>
-</p>
-<p>
-    <a href="/tariffs">Tariffs</a>
 </p>
 </body>
 </html>

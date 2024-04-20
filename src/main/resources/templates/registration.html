@@ -31,9 +31,9 @@
         <input type="email" name="email">
     </label>
 
-    <div th:if="${emailError}" style="color: red;">Error: E-mail has already been taken</div>
-    <div th:if="${usernameError}" style="color: red;">Error: Username has already been taken</div>
-    <div th:if="${nullError}" style="color: red;">Error: All fields must be filled</div>
+    <div th:if="${emailMark}" style="color: red;">Error: E-mail has already been taken</div>
+    <div th:if="${usernameMark}" style="color: red;">Error: Username has already been taken</div>
+    <div th:if="${nullMark}" style="color: red;">Error: All fields must be filled</div>
 
     <div style="margin-bottom: 10px;"></div>
     <button type="submit">Confirm</button>

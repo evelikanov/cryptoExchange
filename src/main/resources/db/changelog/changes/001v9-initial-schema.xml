@@ -159,7 +159,7 @@
             <column name="price" valueNumeric="30000"/>
         </insert>
     </changeSet>
-    <!-- Наполнение таблицы Transaction начальными данными -->
+    <!-- Наполнение таблицы TransactionMessages начальными данными -->
 
 
 </databaseChangeLog>

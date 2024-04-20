@@ -1,22 +1,21 @@
 package com.example.cryptoExchange.service.impl.WalletServiceImpl;
 
-import com.example.cryptoExchange.Exceptions.ErrorMessages;
+import com.example.cryptoExchange.constants.ErrorMessages;
 import com.example.cryptoExchange.model.ExchangeCurrency.Currency;
 import com.example.cryptoExchange.model.User;
-import com.example.cryptoExchange.model.Wallet.CryptoWallet;
 import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import com.example.cryptoExchange.repository.ExchangeCurrencyRepository.CurrencyRepository;
 import com.example.cryptoExchange.repository.UserRepository;
 import com.example.cryptoExchange.repository.WalletRepository.MoneyWalletRepository;
 import com.example.cryptoExchange.service.MoneyWalletService;
 import com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl.CurrencyServiceImpl;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 @Service
@@ -31,9 +30,7 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
     private CurrencyRepository currencyRepository;
     @Autowired
     private CurrencyServiceImpl currencyServiceImpl;
-
-
-    @Transactional
+    //Registration
     public void createMoneyWallet(String username) {
         User user = userRepository.findByUsername(username).orElse(null);
 
@@ -58,7 +55,6 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
             throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
         }
     }
-    //TODO подумать как объединить два кошелька в один сервис
     public void isEmptyMoneyWalletField(BigDecimal balance) {
         if(balance == null) {
             throw new IllegalArgumentException(ErrorMessages.AT_LEAST_ONE_FIELD);
@@ -71,6 +67,17 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         return moneyWallet;
     }
 
+    @Override
+    public List<MoneyWallet> updateBalancesInTransaction(String username, String currencyToBuy, String currencyToSell, BigDecimal newUserMoneyWalletBalanceToBuy, BigDecimal newUserMoneyWalletBalanceToSell) {
+
+        MoneyWallet moneyWalletSell = getMoneyBalanceByUsernameAndCurrency(username, currencyToSell);
+        MoneyWallet moneyWalletBuy = getMoneyBalanceByUsernameAndCurrency(username, currencyToBuy);
+
+        moneyWalletSell.setBalance(newUserMoneyWalletBalanceToSell);
+        moneyWalletBuy.setBalance(newUserMoneyWalletBalanceToBuy);
+
+        return moneyWalletRepository.saveAll(List.of(moneyWalletSell, moneyWalletBuy));
+    }
     public MoneyWallet getMoneyBalanceByUsernameAndCurrency(String username, String currency) {
         User user = userRepository.findByUsername(username).orElse(null);
         MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);
@@ -94,5 +101,19 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         BigDecimal newCryptoBalance = moneyWallet.getBalance().subtract(amount);
         moneyWallet.setBalance(newCryptoBalance);
         moneyWalletRepository.save(moneyWallet);
+    }
+    public MoneyWallet isEnoughMoneyBalance(String username, String currency, BigDecimal balance) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);
+
+        if (moneyWallet.getBalance().subtract(balance).compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(ErrorMessages.INSUFFICIENT_BALANCE);
+        }
+        return moneyWallet;
+    }
+    public MoneyWallet updateMoneyWalletByCurrencyIdAndUser(String username, String currency, BigDecimal balance) {
+        MoneyWallet moneyWallet = getMoneyBalanceByUsernameAndCurrency(username, currency);
+        moneyWallet.setBalance(balance);
+        return moneyWalletRepository.save(moneyWallet);
     }
 }

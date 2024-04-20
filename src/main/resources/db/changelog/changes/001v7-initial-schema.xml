@@ -63,7 +63,7 @@
         </createTable>
     </changeSet>
 
-    <!-- Создание таблицы для Transaction -->
+    <!-- Создание таблицы для TransactionMessages -->
     <changeSet id="5" author="wvbaymler">
         <createTable tableName="transaction">
             <column name="id" type="bigint" autoIncrement="true">
@@ -177,7 +177,7 @@
             <column name="price" valueNumeric="30000"/>
         </insert>
     </changeSet>
-    <!-- Наполнение таблицы Transaction начальными данными -->
+    <!-- Наполнение таблицы TransactionMessages начальными данными -->
     <changeSet id="9" author="wvbaymler">
         <insert tableName="transaction">
             <column name="id" valueNumeric="1"/>

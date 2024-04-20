@@ -1,8 +1,6 @@
 package com.example.cryptoExchange.service.impl;
 
-import com.example.cryptoExchange.model.Transaction.DepositTransaction;
-import com.example.cryptoExchange.model.Transaction.Transaction;
-import com.example.cryptoExchange.model.Transaction.WithdrawalTransaction;
+import com.example.cryptoExchange.model.Transaction.*;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.model.Wallet.Wallet;
 import com.example.cryptoExchange.repository.TransactionRepository;
@@ -34,7 +32,7 @@ public class TransactionServiceImpl implements TransactionService {
         this.transactionRepository = transactionRepository;
     }
     @Transactional
-    public void performMoneyDepositTransaction(Long userId, Long walletId, String currency, BigDecimal balance) {
+    public void saveMoneyDepositTransaction(Long userId, Long walletId, String currency, BigDecimal balance) {
         DepositTransaction depositTransaction = new DepositTransaction();
         depositTransaction.setTimestamp(LocalDateTime.now());
         depositTransaction.setQuantity(balance);
@@ -49,7 +47,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.save(depositTransaction);
     }
     @Transactional
-    public void performMoneyWithdrawTransaction(Long userId, Long walletId, String currency, BigDecimal balance) {
+    public void saveMoneyWithdrawTransaction(Long userId, Long walletId, String currency, BigDecimal balance) {
         WithdrawalTransaction withdrawalTransaction = new WithdrawalTransaction();
         withdrawalTransaction.setTimestamp(LocalDateTime.now());
         withdrawalTransaction.setQuantity(balance);
@@ -64,7 +62,41 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.save(withdrawalTransaction);
     }
     @Transactional
-    public void performCryptoDepositTransaction(Long userId, Long walletId, String cryptoCurrency, BigDecimal amount) {
+    public void saveMoneyBuyTransaction(Long userId, Long walletId, String currencyToBuy, BigDecimal amount, BigDecimal exchangePrice, BigDecimal exchangeRate) {
+        BuyTransaction buyTransaction = new BuyTransaction();
+        buyTransaction.setTimestamp(LocalDateTime.now());
+        buyTransaction.setQuantity(amount);
+        buyTransaction.setExchangeCurrency(currencyToBuy);
+        buyTransaction.setExchangePrice(exchangePrice);
+        buyTransaction.setExchangeRate(exchangeRate);
+
+        User user = userRepository.findById(userId).orElseThrow();
+        Wallet wallet = moneyWalletRepository.findById(walletId).orElseThrow();
+
+        buyTransaction.setUser(user);
+        buyTransaction.setWallet(wallet);
+
+        transactionRepository.save(buyTransaction);
+    }
+    @Transactional
+    public void saveMoneySellTransaction(Long userId, Long walletId, String currencyToBuy, BigDecimal amount, BigDecimal exchangePrice, BigDecimal exchangeRate) {
+        SellTransaction sellTransaction = new SellTransaction();
+        sellTransaction.setTimestamp(LocalDateTime.now());
+        sellTransaction.setQuantity(amount);
+        sellTransaction.setExchangeCurrency(currencyToBuy);
+        sellTransaction.setExchangePrice(exchangePrice);
+        sellTransaction.setExchangeRate(exchangeRate);
+
+        User user = userRepository.findById(userId).orElseThrow();
+        Wallet wallet = moneyWalletRepository.findById(walletId).orElseThrow();
+
+        sellTransaction.setUser(user);
+        sellTransaction.setWallet(wallet);
+
+        transactionRepository.save(sellTransaction);
+    }
+    @Transactional
+    public void saveCryptoDepositTransaction(Long userId, Long walletId, String cryptoCurrency, BigDecimal amount) {
         DepositTransaction depositTransaction = new DepositTransaction();
         depositTransaction.setTimestamp(LocalDateTime.now());
         depositTransaction.setQuantity(amount);
@@ -79,7 +111,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.save(depositTransaction);
     }
     @Transactional
-    public void performCryptoWithdrawTransaction(Long userId, Long walletId, String cryptoCurrency, BigDecimal amount) {
+    public void saveCryptoWithdrawTransaction(Long userId, Long walletId, String cryptoCurrency, BigDecimal amount) {
         WithdrawalTransaction withdrawalTransaction = new WithdrawalTransaction();
         withdrawalTransaction.setTimestamp(LocalDateTime.now());
         withdrawalTransaction.setQuantity(amount);
@@ -93,9 +125,40 @@ public class TransactionServiceImpl implements TransactionService {
 
         transactionRepository.save(withdrawalTransaction);
     }
-    @Override
-    public Transaction saveTransaction(Transaction Transaction) {
-        return null;
+
+    @Transactional
+    public void saveCryptoBuyTransaction(Long userId, Long walletId, String cryptoCurrency, BigDecimal amount, BigDecimal exchangePrice, BigDecimal exchangeRate) {
+        BuyTransaction buyTransaction = new BuyTransaction();
+        buyTransaction.setTimestamp(LocalDateTime.now());
+        buyTransaction.setQuantity(amount);
+        buyTransaction.setExchangeCurrency(cryptoCurrency);
+        buyTransaction.setExchangePrice(exchangePrice);
+        buyTransaction.setExchangeRate(exchangeRate);
+
+        User user = userRepository.findById(userId).orElseThrow();
+        Wallet wallet = cryptoWalletRepository.findById(walletId).orElseThrow();
+
+        buyTransaction.setUser(user);
+        buyTransaction.setWallet(wallet);
+
+        transactionRepository.save(buyTransaction);
+    }
+    @Transactional
+    public void saveCryptoSellTransaction(Long userId, Long walletId, String cryptoCurrency, BigDecimal amount, BigDecimal exchangePrice, BigDecimal exchangeRate) {
+        SellTransaction sellTransaction = new SellTransaction();
+        sellTransaction.setTimestamp(LocalDateTime.now());
+        sellTransaction.setQuantity(amount);
+        sellTransaction.setExchangeCurrency(cryptoCurrency);
+        sellTransaction.setExchangePrice(exchangePrice);
+        sellTransaction.setExchangeRate(exchangeRate);
+
+        User user = userRepository.findById(userId).orElseThrow();
+        Wallet wallet = cryptoWalletRepository.findById(walletId).orElseThrow();
+
+        sellTransaction.setUser(user);
+        sellTransaction.setWallet(wallet);
+
+        transactionRepository.save(sellTransaction);
     }
     @Override
     public List<Transaction> getTransactionsByUsername(String username) {

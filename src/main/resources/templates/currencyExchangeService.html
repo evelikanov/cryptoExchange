@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Exchange order</title>
+</head>
+<body>
+<form action="/user/currencyExchangeService" method="post">
+    <input type="hidden" name="operationType" value="BUY">
+    <p>
+        <label for="currencyToBuy1">Choose currency and amount to buy:</label>
+        <select name="currencyToBuy" id="currencyToBuy1">
+            <option value="USD">USD</option>
+        </select>
+        <input type="number" name="amount" step="any">
+        <select name="currencyToSell">
+            <option value="RUB">RUB</option>
+        </select>
+    </p>
+    <input type="submit" value="Confirm"/>
+</form>
+<form action="/user/currencyExchangeService" method="post">
+    <input type="hidden" name="operationType" value="SELL">
+    <p>
+        <label for="currencyToBuy2">Choose currency and amount to sell:</label>
+        <select name="currencyToBuy" id="currencyToBuy2">
+            <option value="RUB">RUB</option>
+        </select>
+        <input type="number" name="amount" step="any">
+        <select name="currencyToSell">
+            <option value="USD">USD</option>
+        </select>
+    </p>
+    <input type="submit" value="Confirm"/>
+</form>
+<div th:if="${buySuccess}" style="color: green;">Purchase was successful for the amount of: <span th:text="${totalPriceMark}"></span>  <span th:text="${currencyMark}"></span>!</div>
+<div th:if="${sellSuccess}" style="color: green;">Sale was successful for the amount of: <span th:text="${totalPriceMark}"></span> <span th:text="${currencyMark}"></span>!</div>
+<div th:if="${noBalanceMark}" style="color: red;">Insufficient funds on the balance</div>
+<div th:if="${nullMark}" style="color: red;">At least one field must be filled</div>
+<div th:if="${wrongNumberMark}" style="color: red;">Number must be greater then 0</div>
+<div th:if="${noReserveMark}" style="color: red;">Insufficient funds on the reserve server bank</div>
+<a href="/home">Home page</a>
+<a href="/user/data">User's personal account</a>
+</body>
+</html>

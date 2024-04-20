@@ -8,30 +8,33 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.security.Principal;
 
+import static com.example.cryptoExchange.constants.UrlAddress.*;
+import static com.example.cryptoExchange.constants.ViewAttribute.*;
+
 @RestController
 @RequiredArgsConstructor
 public class HomeController {
-    @GetMapping("/home")
+    @GetMapping(_HOME)
     public ModelAndView home(Model model, Principal principal) {
         if (principal != null) {
-            model.addAttribute("username", principal.getName());
-            model.addAttribute("loggedIn", true);
+            model.addAttribute(LOGGED_USER, principal.getName())
+                    .addAttribute(LOGGED_IN, true);
         }
-        return new ModelAndView("/home");
+        return new ModelAndView(_HOME);
     }
-    @GetMapping("/aboutService")
-    public ModelAndView aboutService(Model model) {
-        return new ModelAndView("/aboutService");
-    }
-
-    @GetMapping("/cooperation")
-    public ModelAndView feedBack(Model model) {
-        return new ModelAndView("/cooperation");
+    @GetMapping(_ABOUTSERVICE)
+    public ModelAndView aboutService() {
+        return new ModelAndView(_ABOUTSERVICE);
     }
 
-    @GetMapping("/reviews")
-    public ModelAndView reviews(Model model) {
-        return new ModelAndView("/reviews");
+    @GetMapping(_COOPERATION)
+    public ModelAndView feedBack() {
+        return new ModelAndView(_COOPERATION);
+    }
+
+    @GetMapping(_REVIEWS)
+    public ModelAndView reviews() {
+        return new ModelAndView(_REVIEWS);
     }
 
 }

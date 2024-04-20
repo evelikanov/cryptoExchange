@@ -5,9 +5,11 @@ import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import static com.example.cryptoExchange.constants.TransactionMessages.TRANSACTION_TYPE_DEPOSIT;
+
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("DEPOSIT")
+@DiscriminatorValue(TRANSACTION_TYPE_DEPOSIT)
 public class DepositTransaction extends Transaction {
 }

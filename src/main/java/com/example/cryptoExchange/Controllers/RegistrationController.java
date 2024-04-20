@@ -1,60 +1,52 @@
 package com.example.cryptoExchange.Controllers;
 
-import com.example.cryptoExchange.Exceptions.RegistrationException;
+import com.example.cryptoExchange.Exceptions.GlobalExceptionHandler;
+import com.example.cryptoExchange.dto.RegistrationDTO;
 import com.example.cryptoExchange.repository.ExchangeCurrencyRepository.CryptoCurrencyRepository;
 import com.example.cryptoExchange.repository.WalletRepository.MoneyWalletRepository;
 import com.example.cryptoExchange.repository.UserRepository;
 import com.example.cryptoExchange.service.impl.WalletServiceImpl.CryptoWalletServiceImpl;
 import com.example.cryptoExchange.service.impl.WalletServiceImpl.MoneyWalletServiceImpl;
 import com.example.cryptoExchange.service.impl.UserServiceImpl;
-import jakarta.transaction.Transactional;
+import com.example.cryptoExchange.service.unified.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
+
+import static com.example.cryptoExchange.constants.ErrorMessages.*;
+import static com.example.cryptoExchange.constants.UrlAddress.*;
+import static com.example.cryptoExchange.constants.ViewAttribute.*;
+import static com.example.cryptoExchange.constants.UserDataMessages.*;
 
 @RestController
 public class RegistrationController {
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private UserServiceImpl userServiceImpl;
-    @Autowired
-    private MoneyWalletServiceImpl moneyWalletServiceImpl;
     @Autowired
     private CryptoCurrencyRepository cryptoCurrencyRepository;
     @Autowired
-    private MoneyWalletRepository moneyWalletRepository;
+    private RegistrationService registrationService;
     @Autowired
-    private CryptoWalletServiceImpl cryptoWalletServiceImpl;
+    private GlobalExceptionHandler globalExceptionHandler;
 
-    @GetMapping("/registration")
+    @GetMapping(_REGISTRATION)
     public ModelAndView registration() {
-        return new ModelAndView("/registration");
+        return new ModelAndView(_REGISTRATION);
     }
 
-    @PostMapping("/registration")
-    public ModelAndView registerUser(@RequestParam("username") String username,
-                                     @RequestParam("password") String password,
-                                     @RequestParam("dateOfBirth") String dateOfBirth,
-                                     @RequestParam("email") String email) {
-
+    @PostMapping(_REGISTRATION)
+    public ModelAndView registerUser(Model model,
+                                     RegistrationDTO registrationDTO) {
         try {
-            userServiceImpl.isNullRegistrationField(username, password, dateOfBirth, email);
-            userServiceImpl.isExistedUser(username, email);
+            userServiceImpl.validateRegistration(registrationDTO);
+            registrationService.perfomUserRegistration(registrationDTO);
         } catch (IllegalArgumentException e) {
-            RegistrationException registrationException = new RegistrationException(e.getMessage());
-            ModelAndView errorModelAndView = registrationException.getModelAndView(e);
-            return errorModelAndView;
+            globalExceptionHandler.handleIllegalArgumentException(model, e);
+            return new ModelAndView(_REGISTRATION);
         }
-        userServiceImpl.createUser(username, password, dateOfBirth, email);
-        cryptoWalletServiceImpl.createCryptoWallet(username);
-        moneyWalletServiceImpl.createMoneyWallet(username);
-        RedirectView redirectView = new RedirectView("/home");
-        redirectView.addStaticAttribute("registrationSuccess", true);
-        return new ModelAndView(redirectView);
+        return new ModelAndView(new RedirectView(_HOME))
+                .addObject(REGISTRATION_SUCCESS, true);
     }
 }
