@@ -32,8 +32,7 @@
     </p>
     <div th:if="${withdrawCurrencySuccess}" style="color: green;">Your money wallet has been withdrawn: <span th:text="${balanceMark}"></span> <span th:text="${currencyMark}"></span>!</div>
     <div th:if="${withdrawCryptoSuccess}" style="color: green;">Your crypto wallet has been withdrawn: <span th:text="${amountMark}"></span> <span th:text="${cryptoCurrencyMark}"></span>!</div>
-    <div th:if="${nullMark}" style="color: red;">At least one field must be filled</div>
-    <div th:if="${wrongNumberMark}" style="color: red;">Number must be greater then 0</div>
+    <div th:if="${wrongNumberMark}" style="color: red;">Number must be not null and greater than zero</div>
     <div th:if="${noBalanceMark}" style="color: red;">Insufficient funds on the balance</div>
     <input type="submit" value="Confirm"/>
 </form>

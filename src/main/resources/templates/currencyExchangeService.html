@@ -36,8 +36,7 @@
 <div th:if="${buySuccess}" style="color: green;">Purchase was successful for the amount of: <span th:text="${totalPriceMark}"></span>  <span th:text="${currencyMark}"></span>!</div>
 <div th:if="${sellSuccess}" style="color: green;">Sale was successful for the amount of: <span th:text="${totalPriceMark}"></span> <span th:text="${currencyMark}"></span>!</div>
 <div th:if="${noBalanceMark}" style="color: red;">Insufficient funds on the balance</div>
-<div th:if="${nullMark}" style="color: red;">At least one field must be filled</div>
-<div th:if="${wrongNumberMark}" style="color: red;">Number must be greater then 0</div>
+<div th:if="${wrongNumberMark}" style="color: red;">Number must be not null and greater than zero</div>
 <div th:if="${noReserveMark}" style="color: red;">Insufficient funds on the reserve server bank</div>
 <a href="/home">Home page</a>
 <a href="/user/data">User's personal account</a>

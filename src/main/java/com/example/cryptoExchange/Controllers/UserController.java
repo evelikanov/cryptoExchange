@@ -1,6 +1,8 @@
 package com.example.cryptoExchange.Controllers;
 
+import com.example.cryptoExchange.Exceptions.GlobalExceptionHandler;
 import com.example.cryptoExchange.constants.ErrorMessages;
+import com.example.cryptoExchange.dto.CurrencyExchangeDTO;
 import com.example.cryptoExchange.model.Transaction.Transaction;
 import com.example.cryptoExchange.model.Wallet.CryptoWallet;
 import com.example.cryptoExchange.model.User;
@@ -8,6 +10,7 @@ import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import com.example.cryptoExchange.repository.WalletRepository.CryptoWalletRepository;
 import com.example.cryptoExchange.repository.TransactionRepository;
 import com.example.cryptoExchange.repository.WalletRepository.MoneyWalletRepository;
+import com.example.cryptoExchange.service.TransactionService;
 import com.example.cryptoExchange.service.impl.CryptoReserveBankServiceImpl;
 import com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl.CryptoCurrencyServiceImpl;
 import com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl.CurrencyServiceImpl;
@@ -16,9 +19,10 @@ import com.example.cryptoExchange.service.impl.WalletServiceImpl.CryptoWalletSer
 import com.example.cryptoExchange.service.impl.TransactionServiceImpl;
 import com.example.cryptoExchange.service.impl.UserServiceImpl;
 import com.example.cryptoExchange.service.impl.WalletServiceImpl.MoneyWalletServiceImpl;
-import com.example.cryptoExchange.service.unified.CurrencyExchangeService;
-import com.example.cryptoExchange.service.unified.UpdatePriceService;
+import com.example.cryptoExchange.service.unified.*;
+import com.example.cryptoExchange.service.util.ValidationUtil;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +43,7 @@ import static com.example.cryptoExchange.constants.ViewAttribute.*;
 
 @RestController
 @RequestMapping(_USER)
+@Slf4j
 public class UserController {
     @Autowired
     private UserServiceImpl userServiceImpl;
@@ -66,6 +71,14 @@ public class UserController {
     private UpdatePriceService updatePriceService;
     @Autowired
     private CurrencyExchangeService currencyExchangeService;
+    @Autowired
+    private HistoryTransactionService historyTransactionService;
+    @Autowired
+    private UserDataService userDataService;
+    @Autowired
+    private WalletOperationService walletOperationService;
+    @Autowired
+    private GlobalExceptionHandler globalExceptionHandler;
 
     @GetMapping(_CRYPTOCURRENCYLIST)
     public CompletableFuture<ModelAndView> cryptoCurrencyList(Model model) {
@@ -85,26 +98,17 @@ public class UserController {
     }
     @PostMapping(_CURRENCYEXCHANGESERVICE)
     public ModelAndView currencyExchangePostService(Model model, Principal principal,
-                                           @RequestParam(OPERATION_TYPE) String operationType,
-                                           @RequestParam(BUY_CURRENCY) String currencyToBuy,
-                                           @RequestParam(SELL_CURRENCY) String currencyToSell,
-                                           @RequestParam(value = AMOUNT, required = false) BigDecimal amount) {
-        String username = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(username);
-        Long userId = user.getId();
-        Long currencyToBuyId = currencyServiceImpl.getCurrencyIdBySymbol(currencyToBuy);
-        Long currencyToSellId = currencyServiceImpl.getCurrencyIdBySymbol(currencyToSell);
-        Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currencyToBuy).getId();
+                                           CurrencyExchangeDTO currencyExchangeDTO) {
+        currencyExchangeDTO.setUsername(principal.getName());
 
-        if (operationType.equals(TRANSACTION_TYPE_BUY)) {
-            currencyExchangeService.processBuyTransaction(model, userId, moneyWalletId, currencyToBuyId, currencyToSellId,
-                    currencyToBuy, currencyToSell, username, amount);
-        } else if (operationType.equals(TRANSACTION_TYPE_SELL)) {
-            currencyExchangeService.processSellTransaction(model, userId, moneyWalletId, currencyToBuyId, currencyToSellId,
-                    currencyToBuy, currencyToSell, username, amount);
+        if (currencyExchangeDTO.getOperationType().equals(TRANSACTION_TYPE_BUY)) {
+            currencyExchangeService.processBuyTransaction(model, currencyExchangeDTO);
+        } else if (currencyExchangeDTO.getOperationType().equals(TRANSACTION_TYPE_SELL)) {
+            currencyExchangeService.processSellTransaction(model, currencyExchangeDTO);
         }
         return new ModelAndView(_CURRENCYEXCHANGESERVICE);
     }
+
     @GetMapping(_BUYSELLSERVICE)
     public ModelAndView buySellGetService(Model model) {
         return new ModelAndView(_BUYSELLSERVICE);
@@ -116,79 +120,61 @@ public class UserController {
                                            @RequestParam(TRANSACTION_TYPE) String transactionType,
                                            @RequestParam(value = AMOUNT, required = false) BigDecimal amount) {
         String username = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(username);
-        Long userId = user.getId();
-        Long usdId = currencyServiceImpl.getCurrencyIdBySymbol(currency);
-        Long cryptoId = cryptoCurrencyServiceImpl.getCryptoCurrencyBySymbol(cryptoCurrency).getId();
         Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
 
         if (transactionType.equals(TRANSACTION_TYPE_BUY)) {
             try {
-                if (amount != null) {
-                    BigDecimal rate = BigDecimal.valueOf(1.05).multiply(cryptoCurrencyServiceImpl.getCryptoCurrencyBySymbol(cryptoCurrency).getRate());
-                    BigDecimal totalPrice = rate.multiply(amount);
-                    BigDecimal sumBalance = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getBalance();
-                    if (totalPrice.compareTo(sumBalance) <= 0) {
-                        moneyReserveBankServiceImpl.isNegativeMoneyReserveBankField(amount);
-                        cryptoReserveBankServiceImpl.isEnoughCryptoReserveBankBalance(cryptoCurrency, amount);
-                        BigDecimal newMoneyReserveBankBalance = moneyReserveBankServiceImpl.getMoneyReserveBankBalanceById(usdId).add(totalPrice);
-                        BigDecimal newUserMoneyWalletBalance = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getBalance().subtract(totalPrice);
-                        BigDecimal newUserCryptoReserveBankBalance = cryptoReserveBankServiceImpl.getCryptoReserveBankBalanceById(cryptoId).subtract(amount);
-                        BigDecimal newUserCryptoWalletBalance = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getAmount().add(amount);
-                        moneyReserveBankServiceImpl.updateMoneyReserveBankByCurrencyId(usdId, newMoneyReserveBankBalance);
-                        moneyWalletServiceImpl.updateMoneyWalletByCurrencyIdAndUser(username, currency, newUserMoneyWalletBalance);
-                        cryptoReserveBankServiceImpl.updateCryptoReserveBankByCryptoCurrencyId(cryptoId, newUserCryptoReserveBankBalance);
-                        cryptoWalletServiceImpl.updateCryptoWalletByCryptoCurrencyIdAndUser(username, cryptoCurrency, newUserCryptoWalletBalance);
+                ValidationUtil.validateNumber(amount);
+                BigDecimal rate = BigDecimal.valueOf(1.05).multiply(cryptoCurrencyServiceImpl.getCryptoCurrencyBySymbol(cryptoCurrency).getRate());
+                BigDecimal totalPrice = rate.multiply(amount);
+                BigDecimal sumBalance = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getBalance();
+                if (totalPrice.compareTo(sumBalance) <= 0) {
+                    ValidationUtil.validateNumber(amount);
+                    cryptoReserveBankServiceImpl.isEnoughCryptoReserveBankBalance(cryptoCurrency, amount);
+                    BigDecimal newMoneyReserveBankBalance = moneyReserveBankServiceImpl.getMoneyReserveBankBalanceById(currency).add(totalPrice);
+                    BigDecimal newUserMoneyWalletBalance = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getBalance().subtract(totalPrice);
+                    BigDecimal newUserCryptoReserveBankBalance = cryptoReserveBankServiceImpl.getCryptoReserveBankBalanceBySymbol(cryptoCurrency).subtract(amount);
+                    BigDecimal newUserCryptoWalletBalance = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getAmount().add(amount);
+                    moneyReserveBankServiceImpl.updateMoneyReserveBankByCurrency(currency, newMoneyReserveBankBalance);
+                    moneyWalletServiceImpl.updateMoneyWalletByCurrencyIdAndUser(username, currency, newUserMoneyWalletBalance);
+                    cryptoReserveBankServiceImpl.updateCryptoReserveBankByCryptoCurrency(cryptoCurrency, newUserCryptoReserveBankBalance);
+                    cryptoWalletServiceImpl.updateCryptoWalletByCryptoCurrencyIdAndUser(username, cryptoCurrency, newUserCryptoWalletBalance);
 
-                        transactionServiceImpl.saveCryptoBuyTransaction(userId, cryptoWalletId, cryptoCurrency, amount, totalPrice, rate);
-                        model.addAttribute(BUY_SUCCESS, true)
-                                .addAttribute(TOTALPRICE_MARK, totalPrice);
-                    } else if (totalPrice.compareTo(sumBalance) > 0) {
-                        model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
-                    }
-                } else {
-                    model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
+                    transactionServiceImpl.saveCryptoBuyTransaction(username, cryptoWalletId, cryptoCurrency, amount, totalPrice, rate);
+                    model.addAttribute(BUY_SUCCESS, true)
+                            .addAttribute(TOTALPRICE_MARK, totalPrice);
+                } else if (totalPrice.compareTo(sumBalance) > 0) {
+                    model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
                 }
             } catch (IllegalArgumentException e) {
-                if (e.getMessage().equals(ErrorMessages.INSUFFICIENT_RESERVE_BANK)) {
-                    model.addAttribute(NORESERVE_MARK, ErrorMessages.INSUFFICIENT_RESERVE_BANK);
-                } else if (e.getMessage().equals(NEGATIVE_NUMBER)) {
-                    model.addAttribute(WRONGNUMBER_MARK, NEGATIVE_NUMBER);
-                }
+                globalExceptionHandler.handleExchangeException(model, e);
             }
         } else if (transactionType.equals(TRANSACTION_TYPE_SELL)) {
             try {
-                if (amount != null) {
-                    BigDecimal rate = BigDecimal.valueOf(0.95).multiply(cryptoCurrencyServiceImpl.getCryptoCurrencyBySymbol(cryptoCurrency).getRate());
-                    BigDecimal totalPrice = rate.multiply(amount);
-                    BigDecimal sumCryptoBalance = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getAmount();
-                    if (amount.compareTo(sumCryptoBalance) <= 0) {
-                        cryptoReserveBankServiceImpl.isNegativeCryptoReserveBankField(amount);
-                        moneyReserveBankServiceImpl.isEnoughMoneyReserveBankBalance(currency, totalPrice);
-                        BigDecimal newUserCryptoReserveBankBalance = cryptoReserveBankServiceImpl.getCryptoReserveBankBalanceById(cryptoId).add(amount);
-                        BigDecimal newUserMoneyWalletBalance = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getBalance().add(totalPrice);
-                        BigDecimal newUserCryptoWalletBalance = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getAmount().subtract(amount);
-                        BigDecimal newMoneyReserveBankBalance = moneyReserveBankServiceImpl.getMoneyReserveBankBalanceById(usdId).subtract(totalPrice);
-                        cryptoReserveBankServiceImpl.updateCryptoReserveBankByCryptoCurrencyId(cryptoId, newUserCryptoReserveBankBalance);
-                        moneyWalletServiceImpl.updateMoneyWalletByCurrencyIdAndUser(username, currency, newUserMoneyWalletBalance);
-                        cryptoWalletServiceImpl.updateCryptoWalletByCryptoCurrencyIdAndUser(username, cryptoCurrency, newUserCryptoWalletBalance);
-                        moneyReserveBankServiceImpl.updateMoneyReserveBankByCurrencyId(usdId, newMoneyReserveBankBalance);
+                ValidationUtil.validateNumber(amount);
+                BigDecimal rate = BigDecimal.valueOf(0.95).multiply(cryptoCurrencyServiceImpl.getCryptoCurrencyBySymbol(cryptoCurrency).getRate());
+                BigDecimal totalPrice = rate.multiply(amount);
+                BigDecimal sumCryptoBalance = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getAmount();
+                if (amount.compareTo(sumCryptoBalance) <= 0) {
+                    ValidationUtil.validateNumber(amount);
+                    moneyReserveBankServiceImpl.isEnoughMoneyReserveBankBalance(currency, totalPrice);
+                    BigDecimal newUserCryptoReserveBankBalance = cryptoReserveBankServiceImpl.getCryptoReserveBankBalanceBySymbol(cryptoCurrency).add(amount);
+                    BigDecimal newUserMoneyWalletBalance = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getBalance().add(totalPrice);
+                    BigDecimal newUserCryptoWalletBalance = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getAmount().subtract(amount);
+                    BigDecimal newMoneyReserveBankBalance = moneyReserveBankServiceImpl.getMoneyReserveBankBalanceById(currency).subtract(totalPrice);
+                    cryptoReserveBankServiceImpl.updateCryptoReserveBankByCryptoCurrency(cryptoCurrency, newUserCryptoReserveBankBalance);
+                    moneyWalletServiceImpl.updateMoneyWalletByCurrencyIdAndUser(username, currency, newUserMoneyWalletBalance);
+                    cryptoWalletServiceImpl.updateCryptoWalletByCryptoCurrencyIdAndUser(username, cryptoCurrency, newUserCryptoWalletBalance);
+                    moneyReserveBankServiceImpl.updateMoneyReserveBankByCurrency(currency, newMoneyReserveBankBalance);
 
-                        transactionServiceImpl.saveCryptoSellTransaction(userId, cryptoWalletId, cryptoCurrency, amount, totalPrice, rate);
-                        model.addAttribute(SELL_SUCCESS, true)
-                                .addAttribute(TOTALPRICE_MARK, totalPrice);
+                    transactionServiceImpl.saveCryptoSellTransaction(username, cryptoWalletId, cryptoCurrency, amount, totalPrice, rate);
+                    model.addAttribute(SELL_SUCCESS, true)
+                            .addAttribute(TOTALPRICE_MARK, totalPrice);
                     } else if (amount.compareTo(sumCryptoBalance) > 0) {
                         model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
                     }
-                } else {
-                    model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-                }
             } catch (IllegalArgumentException e) {
-                if (e.getMessage().equals(ErrorMessages.INSUFFICIENT_RESERVE_BANK)) {
-                    model.addAttribute(NORESERVE_MARK, ErrorMessages.INSUFFICIENT_RESERVE_BANK);
-                } else if (e.getMessage().equals(NEGATIVE_NUMBER)) {
-                    model.addAttribute(WRONGNUMBER_MARK, NEGATIVE_NUMBER);
-                }
+                globalExceptionHandler.handleExchangeException(model, e);
             }
         }
         return new ModelAndView(_BUYSELLSERVICE);
@@ -196,37 +182,25 @@ public class UserController {
 
     @GetMapping(_DEALS)
     public ModelAndView deals(Model model, Principal principal) {
-        String username = principal.getName();
-        List<Transaction> transactions = transactionServiceImpl.getTransactionsByUsername(username);
-        model.addAttribute(TRANSACTION_MARK, transactions);
+        historyTransactionService.getHistoryDeals(model, principal.getName());
         return new ModelAndView(_DEALS);
     }
     @GetMapping(_DATA)
     public ModelAndView data(Model model, Principal principal) {
-        String username = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(username);
-        model.addAttribute(LOGGED_USER, user);
+        userDataService.getUserData(model, principal.getName());
         return new ModelAndView(_DATA);
     }
 
     @DeleteMapping(_DATA)
     public ModelAndView deleteAccount(HttpSession session, Principal principal) {
-        userServiceImpl.deleteUser(principal.getName());
-        session.invalidate();
+        userDataService.deleteUserAccount(session, principal.getName());
         RedirectView redirectView = new RedirectView(_HOME);
         redirectView.addStaticAttribute(DELETE_SUCCESS, true);
         return new ModelAndView(redirectView);
     }
-
     @GetMapping(_WALLET)
     public ModelAndView walletGetBalance(Model model, Principal principal) {
-        String username = principal.getName();
-
-        List<MoneyWallet> wallet = moneyWalletServiceImpl.getMoneyBalanceByUsername(username);
-        List<CryptoWallet> cryptoWallets = cryptoWalletServiceImpl.getCryptoBalanceByUsername(username);
-
-        model.addAttribute(MONEYWALLET_MARK, wallet)
-                .addAttribute(CRYPTOWALLET_MARK, cryptoWallets);
+        walletOperationService.getUserWalletData(model, principal.getName());
         return new ModelAndView(_WALLET);
     }
     @GetMapping(_WALLET_TOPUP)
@@ -242,37 +216,27 @@ public class UserController {
                                @RequestParam(value = CRYPTO_CURRENCY, required = false) String cryptoCurrency,
                                @RequestParam(value = AMOUNT, required = false) BigDecimal amount) {
         String username = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(username);
-        Long userId = user.getId();
         if (CRYPTOCURRENCY_TOPUP.equals(operationType)) {
             try {
-                if (amount != null) {
-                    cryptoWalletServiceImpl.isNegativeCryptoWalletField(amount);
-                    cryptoWalletServiceImpl.topUpCryptoBalance(username, cryptoCurrency, amount);
-                    Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
-                    transactionServiceImpl.saveCryptoDepositTransaction(userId, cryptoWalletId, cryptoCurrency, amount);
-                    model.addAttribute(CRYPTOCURRENCY_MARK, cryptoCurrency)
-                            .addAttribute(AMOUNT_MARK, amount)
-                            .addAttribute(TOPUP_CRYPTO_SUCCESS, true);
-                } else {
-                    model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-                }
+                ValidationUtil.validateNumber(amount);
+                cryptoWalletServiceImpl.topUpCryptoBalance(username, cryptoCurrency, amount);
+                Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
+                transactionServiceImpl.saveCryptoDepositTransaction(username, cryptoWalletId, cryptoCurrency, amount);
+                model.addAttribute(CRYPTOCURRENCY_MARK, cryptoCurrency)
+                        .addAttribute(AMOUNT_MARK, amount)
+                        .addAttribute(TOPUP_CRYPTO_SUCCESS, true);
             } catch (IllegalArgumentException e) {
                 model.addAttribute(WRONGNUMBER_MARK, e.getMessage());
             }
         } else if (CURRENCY_TOPUP.equals(operationType)) {
             try {
-                if (balance != null) {
-                    moneyWalletServiceImpl.isNegativeMoneyWalletField(balance);
-                    moneyWalletServiceImpl.topUpMoneyBalance(username, currency, balance);
-                    Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
-                    transactionServiceImpl.saveMoneyDepositTransaction(userId, moneyWalletId, currency, balance);
-                    model.addAttribute(CURRENCY_MARK, currency)
-                            .addAttribute(BALANCE_MARK, balance)
-                            .addAttribute(TOPUP_CURRENCY_SUCCESS, true);
-                } else {
-                    model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-                }
+                ValidationUtil.validateNumber(amount);
+                moneyWalletServiceImpl.topUpMoneyBalance(username, currency, balance);
+                Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
+                transactionServiceImpl.saveMoneyDepositTransaction(username, moneyWalletId, currency, balance);
+                model.addAttribute(CURRENCY_MARK, currency)
+                        .addAttribute(BALANCE_MARK, balance)
+                        .addAttribute(TOPUP_CURRENCY_SUCCESS, true);
             } catch (IllegalArgumentException e) {
                 model.addAttribute(WRONGNUMBER_MARK , e.getMessage());
             }
@@ -292,22 +256,17 @@ public class UserController {
                                                @RequestParam(value = CRYPTO_CURRENCY, required = false) String cryptoCurrency,
                                                @RequestParam(value = AMOUNT, required = false) BigDecimal amount) {
         String username = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(username);
 
         if (CRYPTOCURRENCY_WITHDRAW.equals(operationType)) {
             try {
-                if (amount != null) {
-                    cryptoWalletServiceImpl.isNegativeCryptoWalletField(amount);
-                    cryptoWalletServiceImpl.isEnoughCryptoBalance(username, cryptoCurrency, amount);
-                    cryptoWalletServiceImpl.withdrawCryptoBalance(username, cryptoCurrency, amount);
-                    Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
-                    transactionServiceImpl.saveCryptoWithdrawTransaction(user.getId(), cryptoWalletId, cryptoCurrency, amount);
-                    model.addAttribute(CRYPTOCURRENCY_MARK, cryptoCurrency)
-                            .addAttribute(AMOUNT_MARK, amount)
-                            .addAttribute(WITHDRAW_CRYPTO_SUCCESS, true);
-                } else {
-                    model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-                }
+                ValidationUtil.validateNumber(amount);
+                cryptoWalletServiceImpl.isEnoughCryptoBalance(username, cryptoCurrency, amount);
+                cryptoWalletServiceImpl.withdrawCryptoBalance(username, cryptoCurrency, amount);
+                Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
+                transactionServiceImpl.saveCryptoWithdrawTransaction(username, cryptoWalletId, cryptoCurrency, amount);
+                model.addAttribute(CRYPTOCURRENCY_MARK, cryptoCurrency)
+                        .addAttribute(AMOUNT_MARK, amount)
+                        .addAttribute(WITHDRAW_CRYPTO_SUCCESS, true);
             } catch (IllegalArgumentException e) {
                 if (e.getMessage().equals(NEGATIVE_NUMBER)) {
                     model.addAttribute(WRONGNUMBER_MARK, e.getMessage());
@@ -318,18 +277,14 @@ public class UserController {
             }
         } else if (CURRENCY_WITHDRAW.equals(operationType)) {
             try {
-                if (balance != null) {
-                    moneyWalletServiceImpl.isNegativeMoneyWalletField(balance);
-                    moneyWalletServiceImpl.isEnoughMoneyBalance(username, currency, balance);
-                    moneyWalletServiceImpl.withdrawMoneyBalance(username, currency, balance);
-                    Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
-                    transactionServiceImpl.saveMoneyWithdrawTransaction(user.getId(), moneyWalletId, currency, balance);
-                    model.addAttribute(CURRENCY_MARK, currency)
-                            .addAttribute(BALANCE_MARK, balance)
-                            .addAttribute(WITHDRAW_CURRENCY_SUCCESS, true);
-                } else {
-                    model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-                }
+                ValidationUtil.validateNumber(balance);
+                moneyWalletServiceImpl.isEnoughMoneyBalance(username, currency, balance);
+                moneyWalletServiceImpl.withdrawMoneyBalance(username, currency, balance);
+                Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
+                transactionServiceImpl.saveMoneyWithdrawTransaction(username, moneyWalletId, currency, balance);
+                model.addAttribute(CURRENCY_MARK, currency)
+                        .addAttribute(BALANCE_MARK, balance)
+                        .addAttribute(WITHDRAW_CURRENCY_SUCCESS, true);
             } catch (IllegalArgumentException e) {
                 if (e.getMessage().equals(NEGATIVE_NUMBER)) {
                     model.addAttribute(WRONGNUMBER_MARK, e.getMessage());

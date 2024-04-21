@@ -6,11 +6,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface MoneyReserveBankService {
-    List<MoneyReserveBank> updateBalancesInTransaction(Long currencyToBuyId, Long currencyToSellId, BigDecimal newMoneyReserveBankBalanceToBuy, BigDecimal newMoneyReserveBankBalanceToSell);
-    BigDecimal getMoneyReserveBankBalanceById(Long id);
+    List<MoneyReserveBank> updateBalancesInTransaction(String currencyToBuy, String currencyToSell, BigDecimal newMoneyReserveBankBalanceToBuy, BigDecimal newMoneyReserveBankBalanceToSell);
+    BigDecimal getMoneyReserveBankBalanceById(String symbol);
     List<MoneyReserveBank> getAllMoneyReserveBanks();
-    MoneyReserveBank updateMoneyReserveBankByCurrencyId(Long id, BigDecimal balance);
+    MoneyReserveBank updateMoneyReserveBankByCurrency(String symbol, BigDecimal balance);
 
     boolean isEnoughMoneyReserveBankBalance(String currencyToBuy, BigDecimal amount);
-    boolean isNegativeMoneyReserveBankField(BigDecimal amount);
 }

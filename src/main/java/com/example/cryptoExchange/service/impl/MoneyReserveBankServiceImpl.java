@@ -16,10 +16,10 @@ public class MoneyReserveBankServiceImpl implements MoneyReserveBankService {
     private MoneyReserveBankRepository moneyReserveBankRepository;
 
     @Override
-    public List<MoneyReserveBank> updateBalancesInTransaction(Long currencyToBuyId, Long currencyToSellId, BigDecimal newMoneyReserveBankBalanceToBuy, BigDecimal newMoneyReserveBankBalanceToSell) {
+    public List<MoneyReserveBank> updateBalancesInTransaction(String currencyToBuy, String currencyToSell, BigDecimal newMoneyReserveBankBalanceToBuy, BigDecimal newMoneyReserveBankBalanceToSell) {
 
-        MoneyReserveBank moneyReserveBankSell = moneyReserveBankRepository.findById(currencyToSellId).get();
-        MoneyReserveBank moneyReserveBankBuy = moneyReserveBankRepository.findById(currencyToBuyId).get();
+        MoneyReserveBank moneyReserveBankSell = moneyReserveBankRepository.findBySymbol(currencyToSell);
+        MoneyReserveBank moneyReserveBankBuy = moneyReserveBankRepository.findBySymbol(currencyToBuy);
 
         moneyReserveBankSell.setBalance(newMoneyReserveBankBalanceToSell);
         moneyReserveBankBuy.setBalance(newMoneyReserveBankBalanceToBuy);
@@ -27,15 +27,9 @@ public class MoneyReserveBankServiceImpl implements MoneyReserveBankService {
         return moneyReserveBankRepository.saveAll(List.of(moneyReserveBankSell, moneyReserveBankBuy));
     }
     @Override
-    public BigDecimal getMoneyReserveBankBalanceById(Long id) {
-        BigDecimal moneyReserveBank = moneyReserveBankRepository.findById(id).get().getBalance();;
+    public BigDecimal getMoneyReserveBankBalanceById(String symbol) {
+        BigDecimal moneyReserveBank = moneyReserveBankRepository.findBySymbol(symbol).getBalance();;
         return moneyReserveBank;
-    }
-    public boolean isNegativeMoneyReserveBankField(BigDecimal amount) {
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
-        }
-        return true;
     }
     public boolean isEnoughMoneyReserveBankBalance(String currency, BigDecimal amount) {
         MoneyReserveBank moneyReserveBank = moneyReserveBankRepository.findBySymbol(currency);
@@ -52,8 +46,8 @@ public class MoneyReserveBankServiceImpl implements MoneyReserveBankService {
     }
 
     @Override
-    public MoneyReserveBank updateMoneyReserveBankByCurrencyId(Long id, BigDecimal balance) {
-        MoneyReserveBank moneyReserveBank = moneyReserveBankRepository.findById(id).get();
+    public MoneyReserveBank updateMoneyReserveBankByCurrency(String symbol, BigDecimal balance) {
+        MoneyReserveBank moneyReserveBank = moneyReserveBankRepository.findBySymbol(symbol);
         moneyReserveBank.setBalance(balance);
         return moneyReserveBankRepository.save(moneyReserveBank);
     }

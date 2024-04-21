@@ -8,6 +8,7 @@ import java.util.List;
 public interface MoneyWalletService {
     List<MoneyWallet> updateBalancesInTransaction(String username, String currencyToBuy, String currencyToSell, BigDecimal newUserMoneyWalletBalanceToBuy, BigDecimal newUserMoneyWalletBalanceToSell);
     MoneyWallet getMoneyBalanceByUsernameAndCurrency(String username, String currency);
+    List<MoneyWallet> getMoneyBalanceByUsername(String username);
 
     void createMoneyWallet(String username);
 }

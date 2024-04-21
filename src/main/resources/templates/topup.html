@@ -32,8 +32,7 @@
     </p>
     <div th:if="${topupCurrencySuccess}" style="color: green;">Your money wallet was successfully replenished with: <span th:text="${balanceMark}"></span> <span th:text="${currencyMark}"></span>!</div>
     <div th:if="${topupCryptoSuccess}" style="color: green;">Your crypto wallet was successfully replenished with: <span th:text="${amountMark}"></span> <span th:text="${cryptoCurrencyMark}"></span>!</div>
-    <div th:if="${nullMark}" style="color: red;">At least one field must be filled</div>
-    <div th:if="${wrongNumberMark}" style="color: red;">Number must be greater then 0</div>
+    <div th:if="${wrongNumberMark}" style="color: red;">Number must be not null and greater than zero</div>
     <input type="submit" value="Confirm"/>
 </form>
 <a href="/user/wallet">Your wallet</a>

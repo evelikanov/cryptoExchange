@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -29,6 +30,7 @@ public class UpdatePriceService {
 
     @Async
     @Scheduled(fixedDelay = 60000)
+    @Transactional
     public ListenableFuture<Void> updateRates(Model model) {
         try {
             List<CryptoCurrency> cryptoCurrencies = cryptoCurrencyService.getAllCryptoCurrencies();
@@ -45,7 +47,6 @@ public class UpdatePriceService {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-
         return new AsyncResult<>(null);
     }
 }

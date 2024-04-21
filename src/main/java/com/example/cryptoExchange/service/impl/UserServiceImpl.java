@@ -5,6 +5,7 @@ import com.example.cryptoExchange.dto.RegistrationDTO;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.repository.UserRepository;
 import com.example.cryptoExchange.service.UserService;
+import com.example.cryptoExchange.service.util.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,11 +37,11 @@ public class UserServiceImpl implements UserService {
     }
 
     //Registration
-    public void validateRegistrationField(RegistrationDTO registrationDTO) {
-        if(registrationDTO.getUsername().isEmpty() ||
-                registrationDTO.getPassword().isEmpty() ||
-                registrationDTO.getDateOfBirth().isEmpty() ||
-                registrationDTO.getEmail().isEmpty()) {
+    public void validateFieldsNotEmpty(RegistrationDTO registrationDTO) {
+        if (ValidationUtil.isEmptyField((registrationDTO.getUsername()),
+        registrationDTO.getPassword(),
+        registrationDTO.getDateOfBirth(),
+        registrationDTO.getEmail())) {
             throw new IllegalArgumentException(ErrorMessages.FIELDS_NOT_FILLED);
         }
     }
@@ -55,7 +56,7 @@ public class UserServiceImpl implements UserService {
         }
     }
     public void validateRegistration(RegistrationDTO registrationDTO) throws IllegalArgumentException {
-        validateRegistrationField(registrationDTO);
+        validateFieldsNotEmpty(registrationDTO);
         validateUniqueUsername(registrationDTO);
         validateUniqueEmail(registrationDTO);
     }
@@ -147,7 +148,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    public void deleteUser(String username) {
+    public void deleteAccountByUsername(String username) {
         userRepository.deleteByUsername(username);
     }
 }

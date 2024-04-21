@@ -15,15 +15,9 @@ import java.util.List;
 public class CryptoReserveBankServiceImpl implements CryptoReserveBankService {
     @Autowired
     private CryptoReserveBankRepository cryptoReserveBankRepository;
-    public BigDecimal getCryptoReserveBankBalanceById(Long id) {
-        BigDecimal cryptoReserveBank = cryptoReserveBankRepository.findById(id).get().getAmount();;
+    public BigDecimal getCryptoReserveBankBalanceBySymbol(String symbol) {
+        BigDecimal cryptoReserveBank = cryptoReserveBankRepository.findBySymbol(symbol).getAmount();;
         return cryptoReserveBank;
-    }
-    public boolean isNegativeCryptoReserveBankField(BigDecimal amount) {
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
-        }
-        return true;
     }
     public boolean isEnoughCryptoReserveBankBalance(String cryptoCurrency, BigDecimal amount) {
         CryptoReserveBank cryptoReserveBank = cryptoReserveBankRepository.findBySymbol(cryptoCurrency);
@@ -44,8 +38,8 @@ public class CryptoReserveBankServiceImpl implements CryptoReserveBankService {
         return cryptoReserveBankRepository.save(cryptoReserveBank);
     }
     @Override
-    public CryptoReserveBank updateCryptoReserveBankByCryptoCurrencyId(Long id, BigDecimal amount) {
-        CryptoReserveBank cryptoReserveBank = cryptoReserveBankRepository.findById(id).get();
+    public CryptoReserveBank updateCryptoReserveBankByCryptoCurrency(String symbol, BigDecimal amount) {
+        CryptoReserveBank cryptoReserveBank = cryptoReserveBankRepository.findBySymbol(symbol);
         cryptoReserveBank.setAmount(amount);
         return cryptoReserveBankRepository.save(cryptoReserveBank);
     }

@@ -2,7 +2,9 @@ package com.example.cryptoExchange.service.unified;
 
 import com.example.cryptoExchange.Exceptions.GlobalExceptionHandler;
 import com.example.cryptoExchange.constants.ErrorMessages;
+import com.example.cryptoExchange.dto.CurrencyExchangeDTO;
 import com.example.cryptoExchange.service.*;
+import com.example.cryptoExchange.service.util.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,36 +17,92 @@ import static com.example.cryptoExchange.constants.ViewAttribute.*;
 @Service
 public class CurrencyExchangeService {
     private final MoneyReserveBankService moneyReserveBankService;
-    private final CryptoReserveBankService cryptoReserveBankService;
     private final MoneyWalletService moneyWalletService;
-    private final CryptoWalletService cryptoWalletService;
     private final TransactionService transactionService;
     private final CurrencyService currencyService;
     private final GlobalExceptionHandler globalExceptionHandler;
 
     @Autowired
     public CurrencyExchangeService(MoneyReserveBankService moneyReserveBankService,
-                                   CryptoReserveBankService cryptoReserveBankService,
                                    MoneyWalletService moneyWalletService,
-                                   CryptoWalletService cryptoWalletService,
                                    TransactionService transactionService,
                                    CurrencyService currencyService,
                                    GlobalExceptionHandler globalExceptionHandler) {
         this.moneyReserveBankService = moneyReserveBankService;
-        this.cryptoReserveBankService = cryptoReserveBankService;
         this.moneyWalletService = moneyWalletService;
-        this.cryptoWalletService = cryptoWalletService;
         this.transactionService = transactionService;
         this.currencyService = currencyService;
         this.globalExceptionHandler = globalExceptionHandler;
     }
-    public void perfomBuyExchangeTransaction(Long userId, Long moneyWalletId, Long currencyToBuyId, Long currencyToSellId,
-                                             String currencyToBuy, String currencyToSell, String username,
+
+    @Transactional
+    public void processBuyTransaction(Model model, CurrencyExchangeDTO currencyExchangeDTO) {
+        try {
+            ValidationUtil.validateNumber(currencyExchangeDTO.getAmount());
+            BigDecimal rate = BigDecimal.valueOf(1.05).multiply(currencyService.getCurrencyBySymbol(currencyExchangeDTO.getCurrencyToBuy()).getRate());
+            BigDecimal totalPriceRub = rate.multiply(currencyExchangeDTO.getAmount());
+            BigDecimal sumBalance = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(currencyExchangeDTO.getUsername(), currencyExchangeDTO.getCurrencyToSell()).getBalance();
+
+            if (totalPriceRub.compareTo(sumBalance) <= 0) {
+                handleBuySuccess(model, currencyExchangeDTO.getCurrencyToBuy(), currencyExchangeDTO.getCurrencyToSell(), currencyExchangeDTO.getUsername(),
+                        currencyExchangeDTO.getAmount(), totalPriceRub, rate);
+            } else {
+                model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
+            }
+        } catch (IllegalArgumentException e) {
+            globalExceptionHandler.handleExchangeException(model, e);
+        }
+    }
+
+
+    @Transactional
+    public void processSellTransaction(Model model, CurrencyExchangeDTO currencyExchangeDTO) {
+        try {
+            ValidationUtil.validateNumber(currencyExchangeDTO.getAmount());
+            BigDecimal rate = BigDecimal.valueOf(0.95).multiply(currencyService.getCurrencyBySymbol(currencyExchangeDTO.getCurrencyToSell()).getRate());
+            BigDecimal totalPriceRub = rate.multiply(currencyExchangeDTO.getAmount());
+            BigDecimal sumBalance = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(currencyExchangeDTO.getUsername(), currencyExchangeDTO.getCurrencyToSell()).getBalance();
+
+            if (currencyExchangeDTO.getAmount().compareTo(sumBalance) <= 0) {
+                handleSellSuccess(model, currencyExchangeDTO.getCurrencyToBuy(), currencyExchangeDTO.getCurrencyToSell(), currencyExchangeDTO.getUsername(),
+                        currencyExchangeDTO.getAmount(), totalPriceRub, rate);
+            } else {
+                model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
+            }
+        } catch (IllegalArgumentException e) {
+            globalExceptionHandler.handleExchangeException(model, e);
+        }
+    }
+    public void handleBuySuccess(Model model,
+                                 String currencyToBuy, String currencyToSell, String username,
+                                 BigDecimal amount, BigDecimal totalPriceRub, BigDecimal rate) {
+        moneyReserveBankService.isEnoughMoneyReserveBankBalance(currencyToBuy, amount);
+
+        perfomBuyExchangeTransaction(currencyToBuy, currencyToSell, username,
+                amount, totalPriceRub, rate);
+        model.addAttribute(BUY_SUCCESS, true)
+                .addAttribute(CURRENCY_MARK, currencyToSell)
+                .addAttribute(TOTALPRICE_MARK, totalPriceRub);
+    }
+
+    public void handleSellSuccess(Model model, String currencyToBuy, String currencyToSell, String username,
+                                  BigDecimal amount, BigDecimal totalPriceRub, BigDecimal rate) {
+        moneyReserveBankService.isEnoughMoneyReserveBankBalance(currencyToBuy, totalPriceRub);
+
+        perfomSellExchangeTransaction(currencyToBuy, currencyToSell, username,
+                amount, totalPriceRub, rate);
+        model.addAttribute(SELL_SUCCESS, true)
+                .addAttribute(CURRENCY_MARK, currencyToBuy)
+                .addAttribute(TOTALPRICE_MARK, totalPriceRub);
+    }
+    public void perfomBuyExchangeTransaction(String currencyToBuy, String currencyToSell, String username,
                                              BigDecimal amount, BigDecimal totalPriceRub, BigDecimal rate) {
 
-        BigDecimal currentMoneyReserveBankBalanceToSell = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToSellId);
+        Long moneyWalletId = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToBuy).getId();
+
+        BigDecimal currentMoneyReserveBankBalanceToSell = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToSell);
         BigDecimal currentMoneyWalletBalanceToSell = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToSell).getBalance();
-        BigDecimal currentMoneyReserveBankBalanceToBuy = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToBuyId);
+        BigDecimal currentMoneyReserveBankBalanceToBuy = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToBuy);
         BigDecimal currentMoneyWalletBalanceToBuy = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToBuy).getBalance();
 
         BigDecimal newMoneyReserveBankBalanceToSell = currentMoneyReserveBankBalanceToSell.add(totalPriceRub);
@@ -52,18 +110,19 @@ public class CurrencyExchangeService {
         BigDecimal newMoneyReserveBankBalanceToBuy = currentMoneyReserveBankBalanceToBuy.subtract(amount);
         BigDecimal newUserMoneyWalletBalanceToBuy = currentMoneyWalletBalanceToBuy.add(amount);
 
-        moneyReserveBankService.updateBalancesInTransaction(currencyToBuyId, currencyToSellId, newMoneyReserveBankBalanceToBuy,  newMoneyReserveBankBalanceToSell);
+        moneyReserveBankService.updateBalancesInTransaction(currencyToBuy, currencyToSell, newMoneyReserveBankBalanceToBuy,  newMoneyReserveBankBalanceToSell);
         moneyWalletService.updateBalancesInTransaction(username, currencyToBuy, currencyToSell, newUserMoneyWalletBalanceToBuy, newUserMoneyWalletBalanceToSell);
 
-        transactionService.saveMoneyBuyTransaction(userId, moneyWalletId, currencyToBuy, amount, totalPriceRub, rate);
+        transactionService.saveMoneyBuyTransaction(username, moneyWalletId, currencyToBuy, amount, totalPriceRub, rate);
     }
 
-    public void perfomSellExchangeTransaction(Long userId, Long moneyWalletId, Long currencyToBuyId, Long currencyToSellId,
-                                              String currencyToBuy, String currencyToSell, String username,
+    public void perfomSellExchangeTransaction(String currencyToBuy, String currencyToSell, String username,
                                               BigDecimal amount, BigDecimal totalPriceRub, BigDecimal rate) {
-        BigDecimal currentMoneyReserveBankBalanceToSell = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToSellId);
+        Long moneyWalletId = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToBuy).getId();
+
+        BigDecimal currentMoneyReserveBankBalanceToSell = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToSell);
         BigDecimal currentMoneyWalletBalanceToSell = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToSell).getBalance();
-        BigDecimal currentMoneyReserveBankBalanceToBuy = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToBuyId);
+        BigDecimal currentMoneyReserveBankBalanceToBuy = moneyReserveBankService.getMoneyReserveBankBalanceById(currencyToBuy);
         BigDecimal currentMoneyWalletBalanceToBuy = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToBuy).getBalance();
 
         BigDecimal newMoneyReserveBankBalanceToSell = currentMoneyReserveBankBalanceToSell.add(amount);
@@ -71,86 +130,9 @@ public class CurrencyExchangeService {
         BigDecimal newMoneyReserveBankBalanceToBuy = currentMoneyReserveBankBalanceToBuy.subtract(totalPriceRub);
         BigDecimal newUserMoneyWalletBalanceToBuy = currentMoneyWalletBalanceToBuy.add(totalPriceRub);
 
-        moneyReserveBankService.updateBalancesInTransaction(currencyToBuyId, currencyToSellId, newMoneyReserveBankBalanceToBuy,  newMoneyReserveBankBalanceToSell);
+        moneyReserveBankService.updateBalancesInTransaction(currencyToBuy, currencyToSell, newMoneyReserveBankBalanceToBuy,  newMoneyReserveBankBalanceToSell);
         moneyWalletService.updateBalancesInTransaction(username, currencyToBuy, currencyToSell, newUserMoneyWalletBalanceToBuy, newUserMoneyWalletBalanceToSell);
 
-        transactionService.saveMoneySellTransaction(userId, moneyWalletId, currencyToSell, amount, totalPriceRub, rate);
-    }
-    @Transactional
-    public void processBuyTransaction(Model model, Long userId, Long moneyWalletId, Long currencyToBuyId, Long currencyToSellId,
-                                      String currencyToBuy, String currencyToSell, String username,
-                                      BigDecimal amount) {
-        try {
-            if (amount != null) {
-                BigDecimal rate = BigDecimal.valueOf(1.05).multiply(currencyService.getCurrencyBySymbol(currencyToBuy).getRate());
-                BigDecimal totalPriceRub = rate.multiply(amount);
-                BigDecimal sumBalance = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToSell).getBalance();
-
-                if (totalPriceRub.compareTo(sumBalance) <= 0) {
-                    handleBuySuccess(model, userId, moneyWalletId, currencyToBuyId, currencyToSellId,
-                            currencyToBuy, currencyToSell, username,
-                            amount, totalPriceRub, rate);
-                } else {
-                    model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
-                }
-            } else {
-                model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-            }
-        } catch (IllegalArgumentException e) {
-            globalExceptionHandler.handleExchangeException(model, e);
-        }
-    }
-
-
-    @Transactional
-    public void processSellTransaction(Model model, Long userId, Long moneyWalletId, Long currencyToBuyId, Long currencyToSellId,
-                                       String currencyToBuy, String currencyToSell, String username,
-                                       BigDecimal amount) {
-        try {
-            if(amount != null) {
-                BigDecimal rate = BigDecimal.valueOf(0.95).multiply(currencyService.getCurrencyBySymbol(currencyToSell).getRate());
-                BigDecimal totalPriceRub = rate.multiply(amount);
-                BigDecimal sumBalance = moneyWalletService.getMoneyBalanceByUsernameAndCurrency(username, currencyToSell).getBalance();
-
-                if (amount.compareTo(sumBalance) <= 0) {
-                    handleSellSuccess(model, userId, moneyWalletId, currencyToBuyId, currencyToSellId,
-                            currencyToBuy, currencyToSell, username,
-                            amount, totalPriceRub, rate);
-                } else {
-                    model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
-                }
-            } else {
-                model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-            }
-        } catch (IllegalArgumentException e) {
-            globalExceptionHandler.handleExchangeException(model, e);
-        }
-    }
-    public void handleBuySuccess(Model model, Long userId, Long moneyWalletId, Long currencyToBuyId, Long currencyToSellId,
-                                 String currencyToBuy, String currencyToSell, String username,
-                                 BigDecimal amount, BigDecimal totalPriceRub, BigDecimal rate) {
-        moneyReserveBankService.isNegativeMoneyReserveBankField(amount);
-        moneyReserveBankService.isEnoughMoneyReserveBankBalance(currencyToBuy, amount);
-
-        perfomBuyExchangeTransaction(userId, moneyWalletId, currencyToBuyId, currencyToSellId,
-                currencyToBuy, currencyToSell, username,
-                amount, totalPriceRub, rate);
-        model.addAttribute(BUY_SUCCESS, true)
-                .addAttribute(CURRENCY_MARK, currencyToSell)
-                .addAttribute(TOTALPRICE_MARK, totalPriceRub);
-    }
-
-    public void handleSellSuccess(Model model, Long userId, Long moneyWalletId, Long currencyToBuyId, Long currencyToSellId,
-                                  String currencyToBuy, String currencyToSell, String username,
-                                  BigDecimal amount, BigDecimal totalPriceRub, BigDecimal rate) {
-        moneyReserveBankService.isNegativeMoneyReserveBankField(amount);
-        moneyReserveBankService.isEnoughMoneyReserveBankBalance(currencyToBuy, totalPriceRub);
-
-        perfomSellExchangeTransaction(userId, moneyWalletId, currencyToBuyId, currencyToSellId,
-                currencyToBuy, currencyToSell, username,
-                amount, totalPriceRub, rate);
-        model.addAttribute(SELL_SUCCESS, true)
-                .addAttribute(CURRENCY_MARK, currencyToBuy)
-                .addAttribute(TOTALPRICE_MARK, totalPriceRub);
+        transactionService.saveMoneySellTransaction(username, moneyWalletId, currencyToSell, amount, totalPriceRub, rate);
     }
 }

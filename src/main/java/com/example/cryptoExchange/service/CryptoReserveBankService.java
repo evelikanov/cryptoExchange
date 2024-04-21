@@ -7,9 +7,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface CryptoReserveBankService {
-    BigDecimal getCryptoReserveBankBalanceById(Long id);
+    BigDecimal getCryptoReserveBankBalanceBySymbol(String symbol);
     List<CryptoReserveBank> getAllCryptoReserveBanks();
     CryptoReserveBank saveCryptoReserveBank(CryptoReserveBank cryptoReserveBank);
 
-    CryptoReserveBank updateCryptoReserveBankByCryptoCurrencyId(Long id, BigDecimal amount);
+    CryptoReserveBank updateCryptoReserveBankByCryptoCurrency(String symbol, BigDecimal amount);
 }

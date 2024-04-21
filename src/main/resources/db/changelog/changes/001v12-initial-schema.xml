@@ -6,9 +6,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="db/changelog/changes/001v11-initial-schema.xml"/>
-    <include file="db/changelog/changes/001v12-initial-schema.xml"/>
-    <!-- Пример добавления других файлов изменений -->
-    <!-- <include file="path/to/your/next-changeset.xml"/> -->
+    <!-- Создание таблицы для CryptoCurrency -->
+    <changeSet id="1" author="wvbaymler">
+
+    </changeSet>
+
 
 </databaseChangeLog>
