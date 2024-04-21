@@ -1,8 +1,6 @@
 package com.example.cryptoExchange.model.Transaction;
 
 import com.example.cryptoExchange.model.User;
-import com.example.cryptoExchange.model.Wallet.CryptoWallet;
-import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import com.example.cryptoExchange.model.Wallet.Wallet;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Table(name = "transaction")
 @Entity
@@ -41,8 +38,11 @@ public class Transaction {
     private BigDecimal quantity; // Сумма транзакции
     @Column(name = "type", insertable = false, updatable = false)
     private String type; // Тип транзакции (например, покупка, продажа)
-
     @Column
     private String exchangeCurrency;
+    @Column
+    private BigDecimal exchangePrice;
+    @Column
+    private BigDecimal exchangeRate;
 
 }

@@ -3,6 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Transaction history</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+        }
+
+        th, td {
+             border: 1px solid black;
+             padding: 8px;
+             text-align: left;
+             line-height: 0,5;
+             font-size: 15px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .buy {
+            background-color: lightgreen;
+        }
+
+        .sell {
+            background-color: lightcoral;
+        }
+    </style>
 </head>
 <body>
 <h1>Transaction history</h1>
@@ -10,18 +34,24 @@
     <thead>
     <tr>
         <th>Timestamp</th>
+        <th>Currency</th>
         <th>Quantity</th>
-        <th>Exchange currency</th>
-        <th>Transaction type</th>
+        <th>Exchange rate</th>
+        <th>Total price</th>
+        <th>Type</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="transaction : ${transactions}">
+    <tr th:each="transaction : ${transactionMark}" th:class="${transaction.type == 'BUY'} ? 'buy' : (${transaction.type == 'SELL'} ? 'sell' : '')">
         <td th:text="${transaction.timestamp}"></td>
-        <td th:text="${transaction.quantity}"></td>
         <td th:text="${transaction.exchangeCurrency}"></td>
-        <td th:if="${transaction.type == 'DEPOSIT'}">Deposit</td>
-        <td th:if="${transaction.type == 'WITHDRAWAL'}">Withdrawal</td>
+        <td th:text="${transaction.quantity}"></td>
+        <td th:text="${transaction.exchangeRate}"></td>
+        <td th:text="${transaction.exchangePrice}"></td>
+        <td th:if="${transaction.type == 'DEPOSIT'}">DEPOSIT</td>
+        <td th:if="${transaction.type == 'WITHDRAWAL'}">WITHDRAWAL</td>
+        <td th:if="${transaction.type == 'BUY'}">BUY</td>
+        <td th:if="${transaction.type == 'SELL'}">SELL</td>
     </tr>
     </tbody>
 </table>

@@ -21,19 +21,21 @@
     </thead>
     <tbody>
     <tr>
-        <td th:text="${user.username}"></td>
-        <td th:text="${user.name}"></td>
-        <td th:text="${user.surname}"></td>
-        <td th:text="${user.phoneNumber}"></td>
-        <td th:text="${user.dateOfBirth}"></td>
-        <td th:text="${user.email}"></td>
+        <td th:text="${loggedUser.username}"></td>
+        <td th:text="${loggedUser.name}"></td>
+        <td th:text="${loggedUser.surname}"></td>
+        <td th:text="${loggedUser.phoneNumber}"></td>
+        <td th:text="${loggedUser.dateOfBirth}"></td>
+        <td th:text="${loggedUser.email}"></td>
     </tr>
     </tbody>
 </table>
 <a href="/home">Home page</a>
 <a href="/user/wallet">Your wallet</a>
 <a href="/user/deals">Your transaction history</a>
-<a href="/cryptoCurrencyList">List of Crypto Currencies</a>
+<a href="/user/cryptoCurrencyList">Crypto rates</a>
+<a href="/user/buySellService">Create your order</a>
+<a href="/user/currencyExchangeService">Currency exchange</a>
 <a href="/user/setting">Edit your data</a>
 <form action="/logout" method="post">
     <input type="submit" value="Sign Out"/>

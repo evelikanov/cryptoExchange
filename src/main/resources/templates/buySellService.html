@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction order</title>
+</head>
+<body>
+<form action="/user/buySellService" method="post">
+    <input type="hidden" name="currency" value="USD">
+    <p>Choose crypto currency to buy or sell</p>
+    <p>
+        <select name="cryptoCurrency">
+            <option value="BTC">BTC</option>
+            <option value="ETH">ETH</option>
+            <option value="SOL">SOL</option>
+            <option value="DOGE">DOGE</option>
+        </select>
+        <select name="transactionType">
+            <option value="BUY">Buy</option>
+            <option value="SELL">Sell</option>
+        </select>
+        <input type="number" name="amount" step="any">
+    </p>
+    <div th:if="${buySuccess}" style="color: green;">Purchase was successful for the amount of: <span th:text="${totalPriceMark}"></span> USD!</div>
+    <div th:if="${sellSuccess}" style="color: green;">Sale was successful for the amount of: <span th:text="${totalPriceMark}"></span> USD!</div>
+    <div th:if="${noBalanceMark}" style="color: red;">Insufficient funds on the balance</div>
+    <div th:if="${wrongNumberMark}" style="color: red;">Number must be not null and greater than zero</div>
+    <div th:if="${noReserveMark}" style="color: red;">Insufficient funds on the reserve server bank</div>
+    <input type="submit" value="Confirm"/>
+</form>
+<a href="/home">Home page</a>
+<a href="/user/data">User's personal account</a>
+</body>
+</html>

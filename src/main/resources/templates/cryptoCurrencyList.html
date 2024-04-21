@@ -2,28 +2,68 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Cryptocurrencies list</title>
+    <title>Crypto rates</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+        }
 
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            line-height: 0.5;
+            font-size: 15px;
+            width: 25%;
+        }
 
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-<h1>Cryptocurrencies list</h1>
+<h1>Crypto rates</h1>
 <table>
     <thead>
     <tr>
-        <th>Id</th>
         <th>Name</th>
         <th>Symbol</th>
+        <th>You want to sell (USD)</th>
+        <th>You want to buy (USD)</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="currency : ${cryptoCurrencies}">
-        <td th:text="${currency.id}"></td>
+    <tr th:each="cryptoCurrency : ${cryptoCurrencyMark}">
+        <td th:text="${cryptoCurrency.name}"></td>
+        <td th:text="${cryptoCurrency.symbol}"></td>
+        <td th:text="${cryptoCurrency.rate * 0.95}"></td>
+        <td th:text="${cryptoCurrency.rate * 1.05}"></td>
+    </tr>
+    </tbody>
+</table>
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Symbol</th>
+        <th>You want to sell (RUB)</th>
+        <th>You want to buy (RUB)</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="currency : ${currencyMark}" th:unless="${currency.symbol == 'RUB'}">
         <td th:text="${currency.name}"></td>
         <td th:text="${currency.symbol}"></td>
+        <td th:text="${currency.rate * 0.95}"></td>
+        <td th:text="${currency.rate * 1.05}"></td>
     </tr>
     </tbody>
 </table>
 <a href="/home">Home page</a>
+<a href="/user/data">User's personal account</a>
+<a href="/user/buySellService">Create your order</a>
+<a href="/user/currencyExchangeService">Exchange currency</a>
 </body>
 </html>

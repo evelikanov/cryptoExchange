@@ -1,62 +1,76 @@
 package com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl;
 
 import com.example.cryptoExchange.model.ExchangeCurrency.CryptoCurrency;
-import com.example.cryptoExchange.model.CryptoCurrencyTariffs;
 import com.example.cryptoExchange.repository.ExchangeCurrencyRepository.CryptoCurrencyRepository;
+import com.example.cryptoExchange.repository.ExchangeCurrencyRepository.CurrencyRepository;
 import com.example.cryptoExchange.service.CryptoCurrencyService;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-import com.nimbusds.jose.shaded.gson.JsonParser;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
     private RestTemplate restTemplate;
+    @Autowired
     private CryptoCurrencyRepository cryptoCurrencyRepository;
+    @Autowired
+    private CurrencyRepository currencyRepository;
+    @Autowired
+    private CryptoCurrency cryptoCurrency;
 
-    public CryptoCurrencyTariffs[] exchangeRateSell() {
+    public CryptoCurrencyServiceImpl() {
+
+    }
+    //Rate update
+    public CompletableFuture<Void> updateCryptoCurrencyRates() {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
-        ResponseEntity<CryptoCurrencyTariffs[]> response = restTemplate.getForEntity(url, com.example.cryptoExchange.model.CryptoCurrencyTariffs[].class);
-        com.example.cryptoExchange.model.CryptoCurrencyTariffs[] cryptoSell = response.getBody();
+        String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=";
 
-        String ids = Arrays.stream(cryptoSell).map(crypto -> crypto.getId()).collect(Collectors.joining(","));
-        String priceUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + ids + "&vs_currencies=usd";
-        ResponseEntity<String> priceResponse = restTemplate.getForEntity(priceUrl, String.class);
-        JsonObject priceJson = new JsonParser().parse(priceResponse.getBody()).getAsJsonObject();
+        List<CryptoCurrency> cryptoCurrencies = getAllCryptoCurrencies();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        for (com.example.cryptoExchange.model.CryptoCurrencyTariffs crypto : cryptoSell) {
-            double price = priceJson.getAsJsonObject(crypto.getId()).get("usd").getAsDouble();
-            double updatedPrice = price * 1.05;
-            crypto.setPrice(updatedPrice);
+        for (CryptoCurrency cryptoCurrency : cryptoCurrencies) {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                String currencyName = cryptoCurrency.getName().toLowerCase(Locale.ROOT);
+                String url = apiUrl + currencyName + "&vs_currencies=usd";
+
+                ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+                String responseBody = response.getBody();
+
+                JSONParser parser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = (JSONObject) parser.parse(responseBody);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+
+                JSONObject currencyObject = (JSONObject) jsonObject.get(currencyName);
+                BigDecimal rate = new BigDecimal(currencyObject.get("usd").toString());
+                cryptoCurrency.setRate(rate);
+
+                cryptoCurrencyRepository.save(cryptoCurrency);
+            });
+
+            futures.add(future);
         }
-        return cryptoSell;
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply((voidResult) -> null);
     }
 
-    public CryptoCurrencyTariffs[] exchangeRateBuy() {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false";
-        ResponseEntity<CryptoCurrencyTariffs[]> response = restTemplate.getForEntity(url, com.example.cryptoExchange.model.CryptoCurrencyTariffs[].class);
-        com.example.cryptoExchange.model.CryptoCurrencyTariffs[] cryptoBuy = response.getBody();
-
-        String ids = Arrays.stream(cryptoBuy).map(crypto -> crypto.getId()).collect(Collectors.joining(","));
-        String priceUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + ids + "&vs_currencies=usd";
-        ResponseEntity<String> priceResponse = restTemplate.getForEntity(priceUrl, String.class);
-        JsonObject priceJson = new JsonParser().parse(priceResponse.getBody()).getAsJsonObject();
-
-        for (com.example.cryptoExchange.model.CryptoCurrencyTariffs crypto : cryptoBuy) {
-            double price = priceJson.getAsJsonObject(crypto.getId()).get("usd").getAsDouble();
-            double updatedPrice = price * 0.95;
-            crypto.setPrice(updatedPrice);
-        }
-        return cryptoBuy;
-    }
     public List<String> getAllCryptoCurrenciesSymbolList() {
         return cryptoCurrencyRepository.findAllSymbols();
     }
@@ -65,16 +79,17 @@ public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
         this.restTemplate = restTemplate;
         this.cryptoCurrencyRepository = cryptoCurrencyRepository;
     }
-    public CryptoCurrency getCryptoCurrenciesBySymbol(String symbol) {
+    public CryptoCurrency getCryptoCurrencyBySymbol(String symbol) {
         return cryptoCurrencyRepository.findBySymbol(symbol);
     }
+
     @Override
     public CryptoCurrency saveCryptoCurrency(CryptoCurrency cryptoCurrency) {
         return cryptoCurrencyRepository.save(cryptoCurrency);
     }
     @Override
     public List<CryptoCurrency> getAllCryptoCurrencies() {
-        return cryptoCurrencyRepository.findAll();
+        return cryptoCurrencyRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     @Override

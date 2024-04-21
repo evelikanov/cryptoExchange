@@ -1,21 +1,23 @@
 package com.example.cryptoExchange.service.impl;
 
-import com.example.cryptoExchange.Exceptions.ErrorMessages;
+import com.example.cryptoExchange.constants.ErrorMessages;
+import com.example.cryptoExchange.dto.RegistrationDTO;
 import com.example.cryptoExchange.model.User;
 import com.example.cryptoExchange.repository.UserRepository;
 import com.example.cryptoExchange.service.UserService;
+import com.example.cryptoExchange.service.util.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
+
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -26,13 +28,46 @@ public class UserServiceImpl implements UserService {
         this.passwordEncoder = passwordEncoder;
     }
     public Optional<User> findUserByUsername(String username) {
-
         return userRepository.findByUsername(username);
     }
 
     public boolean authenticateUser(String username, String password) {
         Optional<User> user = userRepository.findByUsername(username);
         return user.map(u -> passwordEncoder.matches(password, u.getPassword())).orElse(false);
+    }
+
+    //Registration
+    public void validateFieldsNotEmpty(RegistrationDTO registrationDTO) {
+        if (ValidationUtil.isEmptyField((registrationDTO.getUsername()),
+        registrationDTO.getPassword(),
+        registrationDTO.getDateOfBirth(),
+        registrationDTO.getEmail())) {
+            throw new IllegalArgumentException(ErrorMessages.FIELDS_NOT_FILLED);
+        }
+    }
+    public void validateUniqueUsername(RegistrationDTO registrationDTO) {
+        if(userRepository.existsByUsername(registrationDTO.getUsername())) {
+            throw new IllegalArgumentException(ErrorMessages.USERNAME_TAKEN);
+        }
+    }
+    public void validateUniqueEmail(RegistrationDTO registrationDTO) {
+        if (userRepository.existsByEmail(registrationDTO.getEmail())) {
+            throw new IllegalArgumentException(ErrorMessages.EMAIL_TAKEN);
+        }
+    }
+    public void validateRegistration(RegistrationDTO registrationDTO) throws IllegalArgumentException {
+        validateFieldsNotEmpty(registrationDTO);
+        validateUniqueUsername(registrationDTO);
+        validateUniqueEmail(registrationDTO);
+    }
+    public void createUser(String username, String password, String dateOfBirth, String email) {
+        User user = new User();
+
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setDateOfBirth(dateOfBirth);
+        userRepository.save(user);
     }
     public User getDetailsByUsername(String username) {
 
@@ -78,12 +113,7 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    public String isNullRegistrationField(String username, String password, String dateOfBirth, String email) {
-        if(username.isEmpty() || password.isEmpty() || dateOfBirth.isEmpty() || email.isEmpty()) {
-            throw new IllegalArgumentException(ErrorMessages.FIELDS_NOT_FILLED);
-        }
-        return null;
-    }
+
 
     public String isExistedEmail(String email) {
         if (userRepository.existsByEmail(email)) {
@@ -92,27 +122,6 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    public String isExistedUser(String username, String email) {
-        if(userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException(ErrorMessages.USERNAME_TAKEN);
-        } else if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException(ErrorMessages.EMAIL_TAKEN);
-        }
-        return null;
-    }
-
-
-    @Transactional
-    public String createUser(String username, String password, String dateOfBirth, String email) {
-        User user = new User();
-
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setDateOfBirth(dateOfBirth);
-        userRepository.save(user);
-        return null;
-    }
 
     public String getRole() {
         return "USER";
@@ -139,7 +148,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    public void deleteUser(String username) {
+    public void deleteAccountByUsername(String username) {
         userRepository.deleteByUsername(username);
     }
 }

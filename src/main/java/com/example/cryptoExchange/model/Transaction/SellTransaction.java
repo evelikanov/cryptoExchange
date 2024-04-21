@@ -6,10 +6,12 @@ import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import static com.example.cryptoExchange.constants.TransactionMessages.TRANSACTION_TYPE_SELL;
+
 @Entity
 @Getter
 @Setter
-@DiscriminatorValue("SELL")
+@DiscriminatorValue(TRANSACTION_TYPE_SELL)
 public class SellTransaction extends Transaction {
 
 }
