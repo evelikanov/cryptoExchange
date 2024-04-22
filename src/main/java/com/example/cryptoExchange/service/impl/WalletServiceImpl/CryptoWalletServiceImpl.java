@@ -75,7 +75,7 @@ public class CryptoWalletServiceImpl implements CryptoWalletService {
         return cryptoWallet;
     }
 
-    public void topUpCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
+    public void topupCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
         User user = userRepository.findByUsername(username).orElse(null);
 
         CryptoWallet cryptoWallet = cryptoWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);

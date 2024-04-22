@@ -11,10 +11,13 @@ import static com.example.cryptoExchange.constants.ViewAttribute.*;
 @Component
 public class ErrorExchangeTransaction {
     public void handleTransaction(Model model, String e) {
-        if (e.equals(ErrorMessages.INSUFFICIENT_RESERVE_BANK)) {
-            model.addAttribute(NORESERVE_MARK, ErrorMessages.INSUFFICIENT_RESERVE_BANK);
-        } else if (e.equals(NEGATIVE_NUMBER)) {
-            model.addAttribute(WRONGNUMBER_MARK, NEGATIVE_NUMBER);
+        switch (e) {
+            case INSUFFICIENT_RESERVE_BANK:
+                model.addAttribute(NORESERVE_MARK, e);
+                break;
+            case NEGATIVE_NUMBER:
+                model.addAttribute(WRONGNUMBER_MARK, e);
+                break;
         }
     }
 }

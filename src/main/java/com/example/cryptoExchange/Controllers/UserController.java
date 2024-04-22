@@ -3,14 +3,12 @@ package com.example.cryptoExchange.Controllers;
 import com.example.cryptoExchange.Exceptions.GlobalExceptionHandler;
 import com.example.cryptoExchange.constants.ErrorMessages;
 import com.example.cryptoExchange.dto.CurrencyExchangeDTO;
-import com.example.cryptoExchange.model.Transaction.Transaction;
-import com.example.cryptoExchange.model.Wallet.CryptoWallet;
+import com.example.cryptoExchange.dto.TopupWalletDTO;
+import com.example.cryptoExchange.dto.UserDataDTO;
 import com.example.cryptoExchange.model.User;
-import com.example.cryptoExchange.model.Wallet.MoneyWallet;
 import com.example.cryptoExchange.repository.WalletRepository.CryptoWalletRepository;
 import com.example.cryptoExchange.repository.TransactionRepository;
 import com.example.cryptoExchange.repository.WalletRepository.MoneyWalletRepository;
-import com.example.cryptoExchange.service.TransactionService;
 import com.example.cryptoExchange.service.impl.CryptoReserveBankServiceImpl;
 import com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl.CryptoCurrencyServiceImpl;
 import com.example.cryptoExchange.service.impl.ExchangeCurrencyServiceImpl.CurrencyServiceImpl;
@@ -210,36 +208,14 @@ public class UserController {
 
     @PostMapping(_WALLET_TOPUP)
     public ModelAndView walletTopUpPostBalance(Model model, Principal principal,
-                               @RequestParam(OPERATION_TYPE) String operationType,
-                               @RequestParam(value = CURRENCY, required = false) String currency,
-                               @RequestParam(value = BALANCE, required = false) BigDecimal balance,
-                               @RequestParam(value = CRYPTO_CURRENCY, required = false) String cryptoCurrency,
-                               @RequestParam(value = AMOUNT, required = false) BigDecimal amount) {
-        String username = principal.getName();
-        if (CRYPTOCURRENCY_TOPUP.equals(operationType)) {
-            try {
-                ValidationUtil.validateNumber(amount);
-                cryptoWalletServiceImpl.topUpCryptoBalance(username, cryptoCurrency, amount);
-                Long cryptoWalletId = cryptoWalletServiceImpl.getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency).getId();
-                transactionServiceImpl.saveCryptoDepositTransaction(username, cryptoWalletId, cryptoCurrency, amount);
-                model.addAttribute(CRYPTOCURRENCY_MARK, cryptoCurrency)
-                        .addAttribute(AMOUNT_MARK, amount)
-                        .addAttribute(TOPUP_CRYPTO_SUCCESS, true);
-            } catch (IllegalArgumentException e) {
-                model.addAttribute(WRONGNUMBER_MARK, e.getMessage());
-            }
-        } else if (CURRENCY_TOPUP.equals(operationType)) {
-            try {
-                ValidationUtil.validateNumber(amount);
-                moneyWalletServiceImpl.topUpMoneyBalance(username, currency, balance);
-                Long moneyWalletId = moneyWalletServiceImpl.getMoneyBalanceByUsernameAndCurrency(username, currency).getId();
-                transactionServiceImpl.saveMoneyDepositTransaction(username, moneyWalletId, currency, balance);
-                model.addAttribute(CURRENCY_MARK, currency)
-                        .addAttribute(BALANCE_MARK, balance)
-                        .addAttribute(TOPUP_CURRENCY_SUCCESS, true);
-            } catch (IllegalArgumentException e) {
-                model.addAttribute(WRONGNUMBER_MARK , e.getMessage());
-            }
+                                               TopupWalletDTO topupWalletDTO) {
+        String loggedUsername = principal.getName();
+        topupWalletDTO.setUsername(loggedUsername);
+
+        if (topupWalletDTO.getOperationType().equals(CURRENCY_TOPUP)) {
+            walletOperationService.replenishUserMoneyWallet(model, topupWalletDTO);
+        } else if (topupWalletDTO.getOperationType().equals(CRYPTOCURRENCY_TOPUP)) {
+            walletOperationService.replenishUserCryptoWallet(model, topupWalletDTO);
         }
         return new ModelAndView(_TOPUP);
     }
@@ -298,37 +274,21 @@ public class UserController {
     }
     @GetMapping(_SETTING)
     public ModelAndView setting(Model model, Principal principal) {
-        String username = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(username);
+        String loggedUsername = principal.getName();
+        User user = userServiceImpl.getDetailsByUsername(loggedUsername);
         model.addAttribute(LOGGED_USER, user);
         return new ModelAndView(_SETTING);
     }
     @PutMapping(_SETTING)
     public ModelAndView settingChange(Model model, Principal principal,
-                                      @RequestParam(NAME) String name,
-                                      @RequestParam(SURNAME) String surname,
-                                      @RequestParam(PHONE_NUMBER) String phoneNumber,
-                                      @RequestParam(EMAIL) String email,
-                                      @RequestParam(DATE_OF_BIRTH) String dateOfBirth) {
+                                      UserDataDTO userDataDTO) {
         String loggedUsername = principal.getName();
-        User user = userServiceImpl.getDetailsByUsername(loggedUsername);
-        Long userId = user.getId();
+        userDataDTO.setUsername(loggedUsername);
 
-        try {
-            userServiceImpl.isEmptySettingField(name, surname, phoneNumber, email, dateOfBirth);
-            userServiceImpl.isExistedEmail(email);
-            userServiceImpl.updateUserDetails(userId, name, surname, phoneNumber, email, dateOfBirth);
-            model.addAttribute(SUCCESS, true);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().equals(ErrorMessages.AT_LEAST_ONE_FIELD)) {
-                model.addAttribute(NULL_MARK, ErrorMessages.AT_LEAST_ONE_FIELD);
-            } else if (e.getMessage().equals(ErrorMessages.EMAIL_TAKEN)) {
-                model.addAttribute(EMAIL_MARK, ErrorMessages.EMAIL_TAKEN);
-            }
-        }
-        User updatedUser = userServiceImpl.getDetailsByUsername(loggedUsername);
+        userDataService.updateUserDetails(model, userDataDTO);
+
+        User updatedUser = userServiceImpl.getDetailsByUsername(userDataDTO.getUsername());
         model.addAttribute(LOGGED_USER, updatedUser);
-
         return new ModelAndView(_SETTING);
     }
 }

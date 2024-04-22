@@ -84,7 +84,7 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         return moneyWallet;
     }
 
-    public void topUpMoneyBalance(String username, String currency, BigDecimal balance) {
+    public void topupMoneyBalance(String username, String currency, BigDecimal balance) {
         User user = userRepository.findByUsername(username).orElse(null);
 
         MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);

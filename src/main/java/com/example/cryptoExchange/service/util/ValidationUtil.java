@@ -18,4 +18,12 @@ public class ValidationUtil{
             throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
         }
     }
+    public static boolean isAnyFieldNotEmpty(String... fields) {
+        for(String field : fields) {
+            if(field != null && !field.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

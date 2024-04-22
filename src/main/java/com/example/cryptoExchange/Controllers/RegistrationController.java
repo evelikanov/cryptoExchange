@@ -40,10 +40,9 @@ public class RegistrationController {
     public ModelAndView registerUser(Model model,
                                      RegistrationDTO registrationDTO) {
         try {
-            userServiceImpl.validateRegistration(registrationDTO);
-            registrationService.perfomUserRegistration(registrationDTO);
+            registrationService.perfomUserRegistration(model, registrationDTO);
         } catch (IllegalArgumentException e) {
-            globalExceptionHandler.handleIllegalArgumentException(model, e);
+            globalExceptionHandler.handleRegistrationException(model, e);
             return new ModelAndView(_REGISTRATION);
         }
         return new ModelAndView(new RedirectView(_HOME))

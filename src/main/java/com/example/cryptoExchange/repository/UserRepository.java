@@ -25,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "u.phoneNumber = CASE WHEN :phoneNumber IS NOT NULL AND :phoneNumber <> '' THEN :phoneNumber ELSE u.phoneNumber END, " +
             "u.email = CASE WHEN :email IS NOT NULL AND :email <> '' THEN :email ELSE u.email END, " +
             "u.dateOfBirth = CASE WHEN :dateOfBirth IS NOT NULL AND :dateOfBirth <> '' THEN :dateOfBirth ELSE u.dateOfBirth END " +
-            "WHERE u.id = :id")
-    void updateUserDetails(@Param("id") Long id, @Param("name") String name, @Param("surname") String surname, @Param("phoneNumber") String phoneNumber, @Param("email") String email, @Param("dateOfBirth") String dateOfBirth);
+            "WHERE u.username = :username")
+    void updateUserDetails(@Param("username") String username, @Param("name") String name, @Param("surname") String surname, @Param("phoneNumber") String phoneNumber, @Param("email") String email, @Param("dateOfBirth") String dateOfBirth);
 
 }
