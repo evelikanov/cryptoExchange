@@ -10,4 +10,7 @@ public interface CryptoWalletService {
     List<CryptoWallet> getCryptoBalanceByUsername(String username);
     void topupCryptoBalance(String username, String cryptoCurrency, BigDecimal amount);
     void createCryptoWallet(String username);
+    void checkCryptoBalanceSufficiency(String username, String cryptoCurrency, BigDecimal amount);
+    void withdrawCryptoBalance(String username, String cryptoCurrency, BigDecimal amount);
+    CryptoWallet updateCryptoWalletByCryptoCurrencyAndUser(String username, String cryptoCurrency, BigDecimal amount);
 }

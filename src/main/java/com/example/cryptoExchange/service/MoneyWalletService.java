@@ -12,4 +12,7 @@ public interface MoneyWalletService {
     List<MoneyWallet> getMoneyBalanceByUsername(String username);
 
     void createMoneyWallet(String username);
+    void checkMoneyBalanceSufficiency(String username, String currency, BigDecimal balance);
+    void withdrawMoneyBalance(String username, String cryptoCurrency, BigDecimal amount);
+    MoneyWallet updateMoneyWalletByCurrencyAndUser(String username, String currency, BigDecimal balance);
 }

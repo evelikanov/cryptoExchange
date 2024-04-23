@@ -10,6 +10,7 @@ public interface CryptoReserveBankService {
     BigDecimal getCryptoReserveBankBalanceBySymbol(String symbol);
     List<CryptoReserveBank> getAllCryptoReserveBanks();
     CryptoReserveBank saveCryptoReserveBank(CryptoReserveBank cryptoReserveBank);
+    void checkCryptoReserveBankBalanceSufficiency(String cryptoCurrency, BigDecimal amount);
 
     CryptoReserveBank updateCryptoReserveBankByCryptoCurrency(String symbol, BigDecimal amount);
 }

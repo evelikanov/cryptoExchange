@@ -10,6 +10,7 @@ public interface CryptoCurrencyService {
     CompletableFuture<Void> updateCryptoCurrencyRates() throws ParseException;
     CryptoCurrency saveCryptoCurrency(CryptoCurrency cryptoCurrency);
     List<CryptoCurrency> getAllCryptoCurrencies();
+    CryptoCurrency getCryptoCurrencyBySymbol(String symbol);
     CryptoCurrency getCryptoCurrencyById(Long id);
     void deleteCryptoCurrency(Long id);
 }
