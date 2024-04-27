@@ -5,6 +5,7 @@ import com.example.cryptoExchange.constants.ErrorMessages;
 import com.example.cryptoExchange.dto.CurrencyExchangeDTO;
 import com.example.cryptoExchange.service.*;
 import com.example.cryptoExchange.service.util.ValidationUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 
 import static com.example.cryptoExchange.constants.ViewAttribute.*;
 
+@Slf4j
 @Service
 public class CurrencyExchangeService {
     private final MoneyReserveBankService moneyReserveBankService;
@@ -46,11 +48,19 @@ public class CurrencyExchangeService {
             if (totalPriceRub.compareTo(sumBalance) <= 0) {
                 handleBuySuccess(model, currencyExchangeDTO.getCurrencyToBuy(), currencyExchangeDTO.getCurrencyToSell(), currencyExchangeDTO.getUsername(),
                         currencyExchangeDTO.getAmount(), totalPriceRub, rate);
+
+                log.info("User {} bought {} {} for {} rub", currencyExchangeDTO.getUsername(),
+                        currencyExchangeDTO.getAmount(), currencyExchangeDTO.getCurrencyToBuy(), totalPriceRub);
             } else {
                 model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
+
+                log.error("User {} tried to buy {} more than his balance", currencyExchangeDTO.getUsername(),
+                        currencyExchangeDTO.getCurrencyToBuy());
             }
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleExchangeException(model, e);
+
+            log.error("User {} failed to buy currency: {}", currencyExchangeDTO.getUsername(), e.getMessage());
         }
     }
 
@@ -66,11 +76,19 @@ public class CurrencyExchangeService {
             if (currencyExchangeDTO.getAmount().compareTo(sumBalance) <= 0) {
                 handleSellSuccess(model, currencyExchangeDTO.getCurrencyToBuy(), currencyExchangeDTO.getCurrencyToSell(), currencyExchangeDTO.getUsername(),
                         currencyExchangeDTO.getAmount(), totalPriceRub, rate);
+
+                log.info("User {} sold {} {} for {} rub", currencyExchangeDTO.getUsername(),
+                        currencyExchangeDTO.getAmount(), currencyExchangeDTO.getCurrencyToSell(), totalPriceRub);
             } else {
                 model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
+
+                log.error("User {} tried to sell {} more than his balance", currencyExchangeDTO.getUsername(),
+                        currencyExchangeDTO.getCurrencyToSell());
             }
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleExchangeException(model, e);
+
+            log.error("User {} failed to sell currency: {}", currencyExchangeDTO.getUsername(), e.getMessage());
         }
     }
     public void handleBuySuccess(Model model,

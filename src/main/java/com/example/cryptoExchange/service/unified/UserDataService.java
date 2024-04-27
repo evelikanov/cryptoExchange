@@ -33,6 +33,7 @@ public class UserDataService {
     public void deleteUserAccount(HttpSession session, String username) {
         userService.deleteAccountByUsername(username);
         session.invalidate();
+
         log.info("User {} was deleted successfully", username);
     }
     @Transactional
@@ -44,8 +45,12 @@ public class UserDataService {
                     userDataDTO.getPhoneNumber(), userDataDTO.getEmail(), userDataDTO.getDateOfBirth());
 
             model.addAttribute(SUCCESS, true);
+
+            log.info("User {} updated data successfully", userDataDTO.getUsername());
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleSettingException(model, e);
+
+            log.error("User {} failed to update: {}", userDataDTO.getUsername(), e.getMessage());
         }
     }
 }

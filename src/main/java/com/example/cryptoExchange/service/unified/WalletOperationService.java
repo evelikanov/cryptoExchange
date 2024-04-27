@@ -10,6 +10,7 @@ import com.example.cryptoExchange.service.CryptoWalletService;
 import com.example.cryptoExchange.service.MoneyWalletService;
 import com.example.cryptoExchange.service.TransactionService;
 import com.example.cryptoExchange.service.util.ValidationUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ import static com.example.cryptoExchange.constants.ErrorMessages.INSUFFICIENT_BA
 import static com.example.cryptoExchange.constants.ErrorMessages.NEGATIVE_NUMBER;
 import static com.example.cryptoExchange.constants.ViewAttribute.*;
 
+@Slf4j
 @Service
 public class WalletOperationService {
     private final MoneyWalletService moneyWalletService;
@@ -55,8 +57,13 @@ public class WalletOperationService {
             model.addAttribute(CURRENCY_MARK, topupWalletDTO.getCurrency())
                     .addAttribute(BALANCE_MARK, topupWalletDTO.getBalance())
                     .addAttribute(TOPUP_CURRENCY_SUCCESS, true);
+
+            log.error("User {} replenished his balance in the amount of {} {}", topupWalletDTO.getUsername(),
+                    topupWalletDTO.getBalance(), topupWalletDTO.getCurrency());
         } catch (IllegalArgumentException e) {
             model.addAttribute(WRONGNUMBER_MARK, e.getMessage());
+
+            log.error("User {} failed to replenish his balance: {}", topupWalletDTO.getUsername(), topupWalletDTO.getBalance());
         }
     }
 
@@ -73,8 +80,13 @@ public class WalletOperationService {
             model.addAttribute(CRYPTOCURRENCY_MARK, topupWalletDTO.getCryptoCurrency())
                     .addAttribute(AMOUNT_MARK, topupWalletDTO.getAmount())
                     .addAttribute(TOPUP_CRYPTO_SUCCESS, true);
+
+            log.error("User {} replenished his balance in the amount of {} {}", topupWalletDTO.getUsername(),
+                    topupWalletDTO.getAmount(), topupWalletDTO.getCryptoCurrency());
         } catch (IllegalArgumentException e) {
             model.addAttribute(WRONGNUMBER_MARK, e.getMessage());
+
+            log.error("User {} failed to replenish his balance: {}", topupWalletDTO.getUsername(), topupWalletDTO.getAmount());
         }
     }
 
@@ -92,8 +104,12 @@ public class WalletOperationService {
             model.addAttribute(CURRENCY_MARK, withdrawalDTO.getCurrency())
                     .addAttribute(BALANCE_MARK, withdrawalDTO.getBalance())
                     .addAttribute(WITHDRAW_CURRENCY_SUCCESS, true);
+
+            log.info("User {} withdrew {} {}", withdrawalDTO.getUsername(), withdrawalDTO.getBalance(), withdrawalDTO.getCurrency());
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleWithdrawalException(model, e);
+
+            log.error("User {} failed to withdraw {} {}", withdrawalDTO.getUsername(), withdrawalDTO.getBalance(), withdrawalDTO.getCurrency());
         }
     }
     @Transactional
@@ -110,8 +126,12 @@ public class WalletOperationService {
             model.addAttribute(CRYPTOCURRENCY_MARK, withdrawalDTO.getCryptoCurrency())
                     .addAttribute(AMOUNT_MARK, withdrawalDTO.getAmount())
                     .addAttribute(WITHDRAW_CRYPTO_SUCCESS, true);
+
+            log.info("User {} withdrew {} {}", withdrawalDTO.getUsername(), withdrawalDTO.getAmount(), withdrawalDTO.getCryptoCurrency());
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleWithdrawalException(model, e);
+
+            log.error("User {} failed to withdraw {} {}", withdrawalDTO.getUsername(), withdrawalDTO.getAmount(), withdrawalDTO.getCryptoCurrency());
         }
     }
 

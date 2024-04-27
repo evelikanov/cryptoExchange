@@ -29,7 +29,7 @@ public class UpdatePriceService {
     }
 
     @Async
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 600000)
     @Transactional
     public ListenableFuture<Void> updateRates(Model model) {
         try {

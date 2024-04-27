@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Reviews</title>
@@ -11,6 +11,27 @@
 <p>
     Here you can see reviews and leave them
 </p>
+
+<form action="/reviews" method="post">
+    <p>Review evaluation</p>
+    <p>
+        <select name="evaluation">
+            <option value="Excellent">Excellent!</option>
+            <option value="Great">Great</option>
+            <option value="Okay">Okay</option>
+            <option value="Awful">Awful</option>
+        </select>
+    </p>
+    <p>
+        <textarea name="reviewText" rows="4" cols="50"></textarea>
+    </p>
+    <div style="margin-bottom: 10px;"></div>
+    <button type="submit">Confirm</button>
+    <div th:if="${param.error}">
+        <p style="color: red;">Invalid username or password</p>
+    </div>
+</form>
+
 <a href="/home">Home page</a>
 </body>
 </html>

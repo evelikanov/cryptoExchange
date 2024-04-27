@@ -30,11 +30,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username);
     }
 
-    public boolean authenticateUser(String username, String password) {
-        Optional<User> user = userRepository.findByUsername(username);
-        return user.map(u -> passwordEncoder.matches(password, u.getPassword())).orElse(false);
-    }
-
     //Registration
     public void validateFieldsNotEmpty(String... fields) {
         if (ValidationUtil.isEmptyField(fields)){

@@ -5,6 +5,7 @@ import com.example.cryptoExchange.constants.ErrorMessages;
 import com.example.cryptoExchange.dto.CryptoCurrencyExchangeDTO;
 import com.example.cryptoExchange.service.*;
 import com.example.cryptoExchange.service.util.ValidationUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 
 import static com.example.cryptoExchange.constants.ViewAttribute.*;
 
+@Slf4j
 @Service
 public class CryptoCurrencyExchangeService {
     private final CryptoCurrencyService cryptoCurrencyService;
@@ -53,11 +55,19 @@ public class CryptoCurrencyExchangeService {
                         cryptoCurrencyExchangeDTO.getCryptoCurrency(),
                         cryptoCurrencyExchangeDTO.getAmount(),
                         totalPrice, rate);
+
+                log.info("User {} bought {} {} for {} usd", cryptoCurrencyExchangeDTO.getUsername(), cryptoCurrencyExchangeDTO.getAmount(),
+                        cryptoCurrencyExchangeDTO.getCryptoCurrency(), totalPrice);
             } else {
                 model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
+
+                log.error("User {} tried to buy {} more than his balance", cryptoCurrencyExchangeDTO.getUsername(),
+                        cryptoCurrencyExchangeDTO.getCryptoCurrency());
             }
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleExchangeException(model, e);
+
+            log.error("User {} failed to buy crypto: {}", cryptoCurrencyExchangeDTO.getUsername(), e.getMessage());
         }
     }
     @Transactional
@@ -76,11 +86,19 @@ public class CryptoCurrencyExchangeService {
                         cryptoCurrencyExchangeDTO.getCryptoCurrency(),
                         cryptoCurrencyExchangeDTO.getAmount(),
                         totalPrice, rate);
+
+                log.info("User {} sold {} {} for {} usd", cryptoCurrencyExchangeDTO.getUsername(), cryptoCurrencyExchangeDTO.getAmount(),
+                        cryptoCurrencyExchangeDTO.getCryptoCurrency(), totalPrice);
             } else if (cryptoCurrencyExchangeDTO.getAmount().compareTo(sumCryptoBalance) > 0) {
                 model.addAttribute(NOBALANCE_MARK, ErrorMessages.INSUFFICIENT_BALANCE);
+
+                log.error("User {} tried to sell {} more than his balance", cryptoCurrencyExchangeDTO.getUsername(),
+                        cryptoCurrencyExchangeDTO.getCryptoCurrency());
             }
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleExchangeException(model, e);
+
+            log.error("User {} failed to sell crypto: {}", cryptoCurrencyExchangeDTO.getUsername(), e.getMessage());
         }
 
     }
