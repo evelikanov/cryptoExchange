@@ -42,7 +42,7 @@ public class MoneyReserveBankServiceImpl implements MoneyReserveBankService {
 
     @Override
     public List<MoneyReserveBank> getAllMoneyReserveBanks() {
-        return null;
+        return moneyReserveBankRepository.findAll();
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -29,7 +30,11 @@ public class CryptoReserveBankServiceImpl implements CryptoReserveBankService {
 
     @Override
     public List<CryptoReserveBank> getAllCryptoReserveBanks() {
-        return null;
+        List<CryptoReserveBank> banks = cryptoReserveBankRepository.findAll();
+        if (banks == null) {
+            return Collections.emptyList(); // Возвращаем пустой список вместо null
+        }
+        return banks;
     }
 
     @Override
