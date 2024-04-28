@@ -19,13 +19,12 @@ public class CryptoReserveBankServiceImpl implements CryptoReserveBankService {
         BigDecimal cryptoReserveBank = cryptoReserveBankRepository.findBySymbol(symbol).getAmount();;
         return cryptoReserveBank;
     }
-    public boolean isEnoughCryptoReserveBankBalance(String cryptoCurrency, BigDecimal amount) {
+    public void checkCryptoReserveBankBalanceSufficiency(String cryptoCurrency, BigDecimal amount) {
         CryptoReserveBank cryptoReserveBank = cryptoReserveBankRepository.findBySymbol(cryptoCurrency);
 
         if (cryptoReserveBank.getAmount().subtract(amount).compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException(ErrorMessages.INSUFFICIENT_RESERVE_BANK);
         }
-        return true;
     }
 
     @Override

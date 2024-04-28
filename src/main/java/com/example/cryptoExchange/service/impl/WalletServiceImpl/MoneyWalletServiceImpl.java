@@ -49,17 +49,6 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         }
         moneyWalletRepository.saveAll(wallets);
     }
-
-    public void isNegativeMoneyWalletField(BigDecimal balance) {
-        if(balance.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
-        }
-    }
-    public void isEmptyMoneyWalletField(BigDecimal balance) {
-        if(balance == null) {
-            throw new IllegalArgumentException(ErrorMessages.AT_LEAST_ONE_FIELD);
-        }
-    }
     public List<MoneyWallet> getMoneyBalanceByUsername(String username) {
         User user = userRepository.findByUsername(username).orElse(null);
         List<MoneyWallet> moneyWallet = moneyWalletRepository.findByUserId(user.getId());
@@ -84,7 +73,7 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         return moneyWallet;
     }
 
-    public void topUpMoneyBalance(String username, String currency, BigDecimal balance) {
+    public void topupMoneyBalance(String username, String currency, BigDecimal balance) {
         User user = userRepository.findByUsername(username).orElse(null);
 
         MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);
@@ -102,16 +91,15 @@ public class MoneyWalletServiceImpl implements MoneyWalletService {
         moneyWallet.setBalance(newCryptoBalance);
         moneyWalletRepository.save(moneyWallet);
     }
-    public MoneyWallet isEnoughMoneyBalance(String username, String currency, BigDecimal balance) {
+    public void checkMoneyBalanceSufficiency(String username, String currency, BigDecimal balance) {
         User user = userRepository.findByUsername(username).orElse(null);
         MoneyWallet moneyWallet = moneyWalletRepository.findByUserIdAndSymbol(user.getId(), currency);
 
         if (moneyWallet.getBalance().subtract(balance).compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException(ErrorMessages.INSUFFICIENT_BALANCE);
         }
-        return moneyWallet;
     }
-    public MoneyWallet updateMoneyWalletByCurrencyIdAndUser(String username, String currency, BigDecimal balance) {
+    public MoneyWallet updateMoneyWalletByCurrencyAndUser(String username, String currency, BigDecimal balance) {
         MoneyWallet moneyWallet = getMoneyBalanceByUsernameAndCurrency(username, currency);
         moneyWallet.setBalance(balance);
         return moneyWalletRepository.save(moneyWallet);

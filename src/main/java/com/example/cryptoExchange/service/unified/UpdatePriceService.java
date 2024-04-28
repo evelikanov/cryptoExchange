@@ -23,18 +23,29 @@ import static com.example.cryptoExchange.constants.ViewAttribute.CURRENCY_MARK;
 public class UpdatePriceService {
     private final CryptoCurrencyService cryptoCurrencyService;
     private final CurrencyService currencyService;
-    public UpdatePriceService(CryptoCurrencyService cryptoCurrencyService, CurrencyService currencyService) {
+    private final RedisService redisService;
+    public UpdatePriceService(CryptoCurrencyService cryptoCurrencyService, CurrencyService currencyService,
+                              RedisService redisService) {
         this.cryptoCurrencyService = cryptoCurrencyService;
         this.currencyService = currencyService;
+        this.redisService = redisService;
     }
 
     @Async
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 600000)
     @Transactional
     public ListenableFuture<Void> updateRates(Model model) {
         try {
-            List<CryptoCurrency> cryptoCurrencies = cryptoCurrencyService.getAllCryptoCurrencies();
-            List<Currency> currencies = currencyService.getAllCurrencies();
+            List<CryptoCurrency> cryptoCurrencies;
+            List<Currency> currencies;
+
+            currencies = redisService.getAllCurrenciesFromCache();
+            cryptoCurrencies = redisService.getAllCryptoCurrenciesFromCache();
+
+            if(currencies.isEmpty() || cryptoCurrencies.isEmpty()) {
+                currencies = currencyService.getAllCurrencies();
+                cryptoCurrencies = cryptoCurrencyService.getAllCryptoCurrencies();
+            }
 
             CompletableFuture<Void> updateCryptoCurrenciesFuture = cryptoCurrencyService.updateCryptoCurrencyRates();
             CompletableFuture<Void> updateCurrenciesFuture = currencyService.updateCurrencyRates();

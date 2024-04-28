@@ -51,17 +51,6 @@ public class CryptoWalletServiceImpl implements CryptoWalletService {
         cryptoWalletRepository.saveAll(wallets);
     }
 
-    public void isNegativeCryptoWalletField(BigDecimal amount) {
-        if(amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(ErrorMessages.NEGATIVE_NUMBER);
-        }
-    }
-
-    public void isEmptyCryptoWalletField(BigDecimal amount) {
-        if(amount == null) {
-            throw new IllegalArgumentException(ErrorMessages.AT_LEAST_ONE_FIELD);
-        }
-    }
     public List<CryptoWallet> getCryptoBalanceByUsername(String username) {
         User user = userRepository.findByUsername(username).orElse(null);
         List<CryptoWallet> cryptoWallet = cryptoWalletRepository.findByUserId(user.getId());
@@ -75,7 +64,7 @@ public class CryptoWalletServiceImpl implements CryptoWalletService {
         return cryptoWallet;
     }
 
-    public void topUpCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
+    public void topupCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
         User user = userRepository.findByUsername(username).orElse(null);
 
         CryptoWallet cryptoWallet = cryptoWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);
@@ -92,16 +81,15 @@ public class CryptoWalletServiceImpl implements CryptoWalletService {
         cryptoWallet.setAmount(newCryptoBalance);
         cryptoWalletRepository.save(cryptoWallet);
     }
-    public CryptoWallet isEnoughCryptoBalance(String username, String cryptoCurrency, BigDecimal amount) {
+    public void checkCryptoBalanceSufficiency(String username, String cryptoCurrency, BigDecimal amount) {
         User user = userRepository.findByUsername(username).orElse(null);
         CryptoWallet cryptoWallet = cryptoWalletRepository.findByUserIdAndSymbol(user.getId(), cryptoCurrency);
 
         if (cryptoWallet.getAmount().subtract(amount).compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException(ErrorMessages.INSUFFICIENT_BALANCE);
         }
-        return cryptoWallet;
     }
-    public CryptoWallet updateCryptoWalletByCryptoCurrencyIdAndUser(String username, String cryptoCurrency, BigDecimal amount) {
+    public CryptoWallet updateCryptoWalletByCryptoCurrencyAndUser(String username, String cryptoCurrency, BigDecimal amount) {
         CryptoWallet cryptoWallet = getCryptoBalanceByUsernameAndCurrency(username, cryptoCurrency);
         cryptoWallet.setAmount(amount);
         return cryptoWalletRepository.save(cryptoWallet);

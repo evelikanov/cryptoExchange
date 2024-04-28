@@ -31,10 +31,4 @@ public class HomeController {
     public ModelAndView feedBack() {
         return new ModelAndView(_COOPERATION);
     }
-
-    @GetMapping(_REVIEWS)
-    public ModelAndView reviews() {
-        return new ModelAndView(_REVIEWS);
-    }
-
 }

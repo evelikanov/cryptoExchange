@@ -13,5 +13,12 @@ public interface UserService {
     List<User> getAllUsers();
     User getUserById(Long id);
     void deleteAccountByUsername(String username);
+    void validateUniqueUsername(String username);
+    void validateFieldsNotEmpty(String... fields);
+    void validateUniqueEmail(String email);
+    void validateRegistration(String username, String password, String dateOfBirth, String email);
+    void validateSettingFieldsNotEmpty(String name, String surname, String phoneNumber, String email, String dateOfBirth);
+    void validateSettingChange(String name, String surname, String phoneNumber, String email, String dateOfBirth);
+    void setUserDetails(String username, String name, String surname, String phoneNumber, String email, String dateOfBirth);
     void deleteUser(Long id);
 }
