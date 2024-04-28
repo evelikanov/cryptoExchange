@@ -32,12 +32,12 @@ public class RedisService {
     public void expireCurrencyCache() {
         redisCurrencyTemplate.expire(HASH_CURRENCY_KEY, 5, TimeUnit.MINUTES);
     }
-//    public List<Currency> getAllCurrenciesFromCache() {
-//        Map<Object, Object> currencyMap = redisCurrencyTemplate.opsForHash().entries(HASH_CURRENCY_KEY);
-//        return currencyMap.values().stream()
-//                .map(currency -> (Currency) currency)
-//                .collect(Collectors.toList());
-//    }
+    public List<Currency> getAllCurrenciesFromCache() {
+        Map<Object, Object> currencyMap = redisCurrencyTemplate.opsForHash().entries(HASH_CURRENCY_KEY);
+        return currencyMap.values().stream()
+                .map(currency -> (Currency) currency)
+                .collect(Collectors.toList());
+    }
     public void saveCryptoCurrencyInCache(CryptoCurrency cryptoCurrency) {
         Map<String, CryptoCurrency> map = new HashMap<>();
         map.put(cryptoCurrency.getId().toString(), cryptoCurrency);
@@ -49,10 +49,11 @@ public class RedisService {
     public void expireCryptoCurrencyCache() {
         redisCryptoCurrencyTemplate.expire(HASH_CRYPTOCURRENCY_KEY, 5, TimeUnit.MINUTES);
     }
-//    public List<CryptoCurrency> getAllCryptoCurrenciesFromCache() {
-//        Map<Object, Object> currencyMap = redisCryptoCurrencyTemplate.opsForHash().entries(HASH_CRYPTOCURRENCY_KEY);
-//        return currencyMap.values().stream()
-//                .map(currency -> (CryptoCurrency) currency)
-//                .collect(Collectors.toList());
-//    }
+    public List<CryptoCurrency> getAllCryptoCurrenciesFromCache() {
+        Map<Object, Object> currencyMap = redisCryptoCurrencyTemplate.opsForHash().entries(HASH_CRYPTOCURRENCY_KEY);
+        return currencyMap.values().stream()
+                .map(cryptoCurrency -> (CryptoCurrency) cryptoCurrency)
+                .collect(Collectors.toList());
+    }
+
 }

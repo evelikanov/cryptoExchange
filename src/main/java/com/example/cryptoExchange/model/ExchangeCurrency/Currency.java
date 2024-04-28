@@ -1,11 +1,12 @@
 package com.example.cryptoExchange.model.ExchangeCurrency;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
+
 import java.math.BigDecimal;
 
 @Table(name = "currency")
@@ -25,4 +26,11 @@ public class Currency {
     private String symbol; // Символ валюты, например BTC
     @Column
     private BigDecimal rate;
+
+    @Transient
+    @JsonIgnore
+    private transient String value;
+    public Currency(String value) {
+        this.value = value;
+    }
 }

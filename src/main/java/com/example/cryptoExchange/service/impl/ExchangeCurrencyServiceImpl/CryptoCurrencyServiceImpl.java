@@ -48,19 +48,18 @@ public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
         RestTemplate restTemplate = new RestTemplate();
         String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=";
 
-//        List<CryptoCurrency> cryptoCurrencies = redisService.getAllCryptoCurrenciesFromCache();
-//        if(cryptoCurrencies == null) {
-//            cryptoCurrencies = getAllCryptoCurrencies();
-//        }
+        List<CryptoCurrency> cryptoCurrencies;
+        cryptoCurrencies =redisService.getAllCryptoCurrenciesFromCache();
+        if(cryptoCurrencies.isEmpty()) {
+            cryptoCurrencies = getAllCryptoCurrencies();
+        }
 
-        List<CryptoCurrency> cryptoCurrencies = getAllCryptoCurrencies();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (CryptoCurrency cryptoCurrency : cryptoCurrencies) {
             BigDecimal rateCache = null;
             try {
                 rateCache = redisService.getCryptoCurrencyFromCache(cryptoCurrency.getId()).getRate();
-                log.info("rateCache = " + rateCache);
             } catch (NullPointerException e) {
                 log.error("Error retrieving rate from cache: " + e.getMessage());
 
@@ -69,7 +68,7 @@ public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
 
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 String currencyName = cryptoCurrency.getName().toLowerCase(Locale.ROOT);
-                BigDecimal rate = null;
+                BigDecimal rate;
 
                 if (finalRateCache == null) {
                     String url = apiUrl + currencyName + "&vs_currencies=usd";
@@ -78,7 +77,7 @@ public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
                     String responseBody = response.getBody();
 
                     JSONParser parser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-                    JSONObject jsonObject = null;
+                    JSONObject jsonObject;
                     try {
                         jsonObject = (JSONObject) parser.parse(responseBody);
                     } catch (ParseException e) {
@@ -92,6 +91,7 @@ public class CryptoCurrencyServiceImpl implements CryptoCurrencyService {
                     cryptoCurrencyRepository.save(cryptoCurrency);
                     redisService.saveCryptoCurrencyInCache(cryptoCurrency);
                     redisService.expireCryptoCurrencyCache();
+                    log.info("CryptoCurrency rate updated: " + cryptoCurrency.getSymbol() + " = " + cryptoCurrency.getRate());
                 }
             });
             futures.add(future);

@@ -1,5 +1,6 @@
 package com.example.cryptoExchange.model.ExchangeCurrency;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,4 +28,11 @@ public class CryptoCurrency {
     private String symbol; // Символ криптовалюты, например BTC
     @Column
     private BigDecimal rate; // Текущая цена криптовалюты
+
+    @Transient
+    @JsonIgnore
+    private transient String value;
+    public CryptoCurrency(String value) {
+        this.value = value;
+    }
 }

@@ -45,13 +45,11 @@ public class CurrencyServiceImpl implements CurrencyService {
         RestTemplate restTemplate = new RestTemplate();
         String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=";
 
-//        List<Currency> currencies = redisService.getAllCurrenciesFromCache();
-//        if(currencies == null) {
-//            currencies = getAllCurrencies();
-//        }
-        //TODO настроить взятие данных сначала из кэша
-        List<Currency> currencies = getAllCurrencies();
-        currencies.sort(Comparator.comparing(Currency::getId));
+        List<Currency> currencies;
+        currencies = redisService.getAllCurrenciesFromCache();
+        if(currencies.isEmpty()) {
+            currencies = getAllCurrencies();
+        }
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -59,7 +57,6 @@ public class CurrencyServiceImpl implements CurrencyService {
             BigDecimal rateCache = null;
             try {
                 rateCache = redisService.getCurrencyFromCache(currency.getId()).getRate();
-                log.info("rateCache = " + rateCache);
             } catch (NullPointerException e) {
                 log.error("Error retrieving rate from cache: " + e.getMessage());
 
@@ -74,11 +71,10 @@ public class CurrencyServiceImpl implements CurrencyService {
                     if (!currencySymbol.equals(excludedCurrencySymbol)) {
                         String url = apiUrl + currencySymbol + "&vs_currencies=rub";
 
-                        log.info("Я пошел через обновление");
                         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
                         String responseBody = response.getBody();
                         JSONParser parser = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE);
-                        JSONObject jsonObject = null;
+                        JSONObject jsonObject;
                         try {
                         jsonObject = (JSONObject) parser.parse(responseBody);
                         } catch (ParseException e) {
@@ -94,6 +90,8 @@ public class CurrencyServiceImpl implements CurrencyService {
                     currencyRepository.save(currency);
                     redisService.saveCurrencyInCache(currency);
                     redisService.expireCurrencyCache();
+
+                    log.info("Currency rate updated: " + currency.getSymbol() + " = " + currency.getRate());
                 }
             });
             futures.add(future);
